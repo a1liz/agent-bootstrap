@@ -1,45 +1,97 @@
 # Agent Project Bootstrap
 
-## 这个仓库是什么
+这个仓库的作用，是帮你快速起一个“适合 agent 持续开发”的项目骨架，不用每次都从头设计目录结构、运行时落盘位置、操作文档和评估约束。
 
-这个仓库是一个面向新 agent 项目的 bootstrap 源仓库。它沉淀了可复用的工程规则、起步模板和最小自动化能力，适用于由长时间运行的 coding agent 持续开发、并且需要统一运行时结构、上下文管理方式、评估纪律、工具接入边界和交付节奏的项目。
+如果你现在最想知道的是“这仓库到底怎么用”，最短路径其实只有三步：
 
-## 它产出什么
+1. 用 `scripts/bootstrap_new_project.sh` 生成一个新项目。
+2. 只按需启用可选模块。
+3. 生成后的文件由新项目自己维护，不要默认把这里当成长期联动的子模块。
 
-这个仓库主要提供三类内容：
+## 什么时候该用这个仓库
 
-- 大多数 agent 项目都应该采用的 `core` 基线规则
-- 面向更重或更专门工作流的可选 `modules`
-- 用于生成新项目初始骨架的模板和脚本
+当你的项目有下面这些特征时，这个 bootstrap 会比较合适：
 
-## 采用方式
+- agent 运行时间长，或者需要断点恢复
+- 会产生运行日志、状态文件、评估产物等运行时数据
+- 有迭代式 eval 流程
+- 需要编排子进程
+- 需要让操作者方便地观察运行状态，尤其是 tmux 场景
 
-推荐的采用方式是 `scaffold + selective modules + reference docs`。
+如果你要的是业务代码、应用框架脚手架，或者某个具体技术栈的 feature starter，这个仓库并不负责。它只提供工程结构。
 
-- 先把 `core` 模板复制到新项目里，并由该项目自己维护。
-- 仅在项目确实需要时再启用可选模块。
-- 更广义的原理说明、经验总结和参考材料保留在本仓库中，而不是整套复制到每个项目里。
+## 仓库里主要有什么
 
-默认不建议把这个仓库作为 `submodule` 直接挂到每个新项目中。
+- `templates/core/`：每个新项目都会复制进去的基线模板
+- `templates/modules/`：按需叠加的可选模块
+- `scripts/bootstrap_new_project.sh`：生成新项目的主脚本
+- `scripts/validate_template_integrity.sh`：校验模板和文档覆盖面是否还一致
+- `docs/`：采用方式和参考资料
+- `examples/minimal-agent-project/`：一个最小生成结果的形态示例
 
-## 仓库结构
+## 快速开始
 
-- `docs/`：规则、采用方式说明和参考文档
-- `templates/`：会被复制进新项目的模板文件
-- `scripts/`：bootstrap 脚本和校验脚本
-- `checklists/`：项目采用和模块选择清单
-- `examples/`：基于模板生成的示例项目形态
+生成一个最小项目：
 
-## Core / Modules / Reference 的区别
+```bash
+scripts/bootstrap_new_project.sh /path/to/my-agent-project
+```
 
-- `core`：大多数 agent 项目在初始化时都应采用的基线规则和文件
-- `modules`：按需启用的可选能力，用于更重的工作流或特定场景
-- `reference`：原理说明、反模式和迁移说明，保留在 bootstrap 仓库中，不必进入每个项目
+生成一个带常用模块的项目：
 
-## 如何开始
+```bash
+scripts/bootstrap_new_project.sh /path/to/my-agent-project \
+  --with-eval-harness \
+  --with-multi-run \
+  --with-tmux
+```
 
-建议先阅读 [docs/overview.md](/data/home/liz/agent-bootstrap/docs/overview.md) 和 [docs/adoption-model.md](/data/home/liz/agent-bootstrap/docs/adoption-model.md)。
+这个脚本会做下面几件事：
 
-使用 `scripts/bootstrap_new_project.sh` 可以基于 `templates/core` 生成一个最小项目骨架；如果项目需要额外能力，优先考虑 `--with-eval-harness`、`--with-multi-run`、`--with-tmux` 这几个主模块。`browser-adapter` 仍然保留，但更适合作为特定场景下的 specialized module。
+- 把 `templates/core/` 复制到目标目录
+- 按顺序叠加你选择的模块模板
+- 创建 `src/` 和 `tests/`
+- 把 `README.md.tpl` 实化成 `README.md`
+- 在 `docs/BOOTSTRAP_ADOPTION.md` 里记录 bootstrap 来源和版本
 
-当你修改模板或模块覆盖范围时，可以运行 `scripts/validate_template_integrity.sh` 来检查 bootstrap 仓库自身是否仍然完整一致。
+注意：目标目录必须事先不存在。
+
+## 模块该怎么选
+
+建议先从 `core` 开始，只有在项目真的需要时再加模块：
+
+- `--with-eval-harness`：需要明确 eval 结构和可重复评估流程时启用
+- `--with-multi-run`：需要同时管理多次运行或多组运行时启用
+- `--with-tmux`：需要长期运行、方便操作者观察和接管时启用
+- `--with-browser-adapter`：更专门的浏览器或工具接入场景
+
+如果你现在拿不准，推荐顺序是：
+
+1. `core`
+2. `eval-harness`
+3. `multi-run`
+4. `tmux`
+5. `browser-adapter` 只在确实有需求时再加
+
+## 一个典型的使用流程
+
+1. 先看 [docs/overview.md](/data/home/liz/agent-bootstrap/docs/overview.md)，理解这个 bootstrap 想统一什么。
+2. 运行 `scripts/bootstrap_new_project.sh` 生成项目。
+3. 打开生成后的 `README.md`、`docs/BOOTSTRAP_ADOPTION.md`、`docs/OPERATIONS.md`。
+4. 对照 [checklists/new-project-checklist.md](/data/home/liz/agent-bootstrap/checklists/new-project-checklist.md) 检查基线是否完整。
+5. 后续就在新项目里继续演进这些复制过去的文件，而不是反向依赖这个仓库。
+
+## 接下来该看什么
+
+- [docs/overview.md](/data/home/liz/agent-bootstrap/docs/overview.md)：整体目标和适用范围
+- [docs/adoption-model.md](/data/home/liz/agent-bootstrap/docs/adoption-model.md)：推荐采用方式
+- [examples/minimal-agent-project/README.md](/data/home/liz/agent-bootstrap/examples/minimal-agent-project/README.md)：最小生成项目的外形
+- [checklists/new-project-checklist.md](/data/home/liz/agent-bootstrap/checklists/new-project-checklist.md)：生成后自检清单
+
+## 对维护这个仓库的人
+
+如果你修改了模板、模块覆盖范围，或者文档里提到的文件面，记得运行：
+
+```bash
+scripts/validate_template_integrity.sh
+```
