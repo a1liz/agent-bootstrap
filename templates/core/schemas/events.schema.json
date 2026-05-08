@@ -1,0 +1,27 @@
+{
+  "type": "object",
+  "description": "Minimal event record shape for terminal-correlated structured logs.",
+  "required": ["timestamp", "event", "message", "run_name", "path"],
+  "properties": {
+    "timestamp": {
+      "type": "string",
+      "description": "Event timestamp."
+    },
+    "event": {
+      "type": "string",
+      "description": "Stable event prefix such as RUN or EVAL."
+    },
+    "message": {
+      "type": "string",
+      "description": "Short human-readable summary."
+    },
+    "run_name": {
+      "type": "string",
+      "description": "Active run identifier."
+    },
+    "path": {
+      "type": "string",
+      "description": "Relevant artifact or log path."
+    }
+  }
+}

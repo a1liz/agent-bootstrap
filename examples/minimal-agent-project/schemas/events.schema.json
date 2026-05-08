@@ -1,0 +1,4 @@
+{
+  "type": "object",
+  "required": ["timestamp", "event", "message", "run_name", "path"]
+}
