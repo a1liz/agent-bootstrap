@@ -3,259 +3,231 @@
 set -euo pipefail
 
 usage() {
-  echo "usage: $0 <project-dir> [--with-<module> ...] [--dry-run]" >&2
-  echo "  modules: docs-dual-format, eval-harness, multi-run, tmux, browser-adapter" >&2
+  echo "usage: $0 [<project-dir>] [--dry-run]" >&2
+  echo ""
+  echo "Interactive mode (default):" >&2
+  echo "  Prompts for project directory, detects current state, and lets you pick skills." >&2
+  echo ""
+  echo "Non-interactive:" >&2
+  echo "  $0 <project-dir> --with-<skill> [...]" >&2
+  echo "  skills: bootstrap-core, eval-harness, multi-run, tmux, browser-adapter, docs-dual-format" >&2
 }
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "$script_dir/.." && pwd)"
 modules_root="$repo_root/templates/modules"
 
+. "$script_dir/lib.sh"
+
 target_dir=""
 modules=()
 dry_run=false
+interactive=true
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --with-bootstrap-core)
+      modules+=("bootstrap-core"); interactive=false; shift ;;
     --with-tmux)
-      modules+=("tmux")
-      shift
-      ;;
+      modules+=("tmux"); interactive=false; shift ;;
     --with-eval-harness)
-      modules+=("eval-harness")
-      shift
-      ;;
+      modules+=("eval-harness"); interactive=false; shift ;;
     --with-browser-adapter)
-      modules+=("browser-adapter")
-      shift
-      ;;
+      modules+=("browser-adapter"); interactive=false; shift ;;
     --with-multi-run)
-      modules+=("multi-run")
-      shift
-      ;;
+      modules+=("multi-run"); interactive=false; shift ;;
     --with-docs-dual-format)
-      modules+=("docs-dual-format")
-      shift
-      ;;
+      modules+=("docs-dual-format"); interactive=false; shift ;;
     --dry-run)
-      dry_run=true
-      shift
-      ;;
+      dry_run=true; shift ;;
     --help|-h)
-      usage
-      exit 0
-      ;;
+      usage; exit 0 ;;
     -*)
-      echo "unknown option: $1" >&2
-      usage
-      exit 1
-      ;;
+      echo "unknown option: $1" >&2; usage; exit 1 ;;
     *)
       if [[ -n "$target_dir" ]]; then
         echo "project directory already set: $target_dir" >&2
-        usage
-        exit 1
+        usage; exit 1
       fi
-      target_dir="$1"
-      shift
-      ;;
+      target_dir="$1"; shift ;;
   esac
 done
 
+# ── resolve target directory ────────────────────────────────────
+
 if [[ -z "$target_dir" ]]; then
-  usage
+  read -r -p "Target project directory: " target_dir
+  target_dir="${target_dir/#\~/$HOME}"
+fi
+
+if [[ -z "$target_dir" ]] || [[ ! -d "$target_dir" ]]; then
+  echo "target directory does not exist: ${target_dir:-"(empty)"}" >&2
   exit 1
 fi
 
-if [[ ! -d "$target_dir" ]]; then
-  echo "target directory does not exist: $target_dir" >&2
-  exit 1
+target_dir="$(cd "$target_dir" && pwd)"
+
+# ── detect current state ────────────────────────────────────────
+
+bootstrap_version="$(git -C "$repo_root" rev-parse --short HEAD 2>/dev/null || echo "uncommitted")"
+
+skills_dir="$target_dir/.claude/skills"
+
+adoption_file=""
+for candidate in "$target_dir/docs/md/BOOTSTRAP_ADOPTION.md" "$target_dir/docs/BOOTSTRAP_ADOPTION.md"; do
+  if [[ -f "$candidate" ]]; then
+    adoption_file="$candidate"
+    break
+  fi
+done
+source_record="$skills_dir/.bootstrap-source.txt"
+
+bootstrapped=false
+has_skills=false
+
+if [[ -n "$adoption_file" ]]; then
+  bootstrapped=true
+fi
+if [[ -f "$source_record" ]]; then
+  has_skills=true
+fi
+
+installed_skills=()
+if [[ -d "$skills_dir" ]]; then
+  for f in "$skills_dir"/*.md; do
+    if [[ -f "$f" ]]; then
+      installed_skills+=("$(basename "$f" .md)")
+    fi
+  done
+fi
+
+local_ver=""
+if [[ -f "$source_record" ]]; then
+  local_ver=$(grep "^version:" "$source_record" | awk '{print $2}')
+fi
+
+echo ""
+echo "═══ agent-bootstrap update ═══"
+echo "Target: $target_dir"
+
+if $bootstrapped; then
+  echo "Status: bootstrapped${local_ver:+ (bootstrap v $local_ver)}"
+elif $has_skills; then
+  echo "Status: skills only${local_ver:+ (v $local_ver)} — no bootstrap scaffolding"
+else
+  echo "Status: clean — no bootstrap or skills detected"
+fi
+
+# ── list available modules ──────────────────────────────────────
+
+all_modules=()
+for d in "$modules_root"/*/; do
+  all_modules+=("$(basename "$d")")
+done
+
+echo ""
+echo "Currently installed skills:"
+if [[ ${#installed_skills[@]} -eq 0 ]]; then
+  echo "  (none)"
+else
+  for s in "${installed_skills[@]}"; do
+    echo "  - $s"
+  done
+fi
+
+echo ""
+echo "Available skills:"
+declare -A installed_map
+for s in "${installed_skills[@]}"; do
+  installed_map["$s"]="installed"
+done
+print_module_menu_with_status all_modules installed_map
+
+# ── interactive selection ───────────────────────────────────────
+
+if $interactive; then
+  prompt_module_selection "update"
+  modules=("${SELECTED_MODULES[@]}")
 fi
 
 if [[ ${#modules[@]} -eq 0 ]]; then
-  echo "no modules specified, nothing to update" >&2
-  usage
-  exit 1
+  echo ""
+  echo "no skills selected, nothing to do"
+  exit 0
 fi
 
-adoption_doc="$target_dir/docs/BOOTSTRAP_ADOPTION.md"
-is_bootstrapped=false
-if [[ -f "$adoption_doc" ]]; then
-  is_bootstrapped=true
-fi
-
-already_enabled=()
-if $is_bootstrapped; then
-  for module in "${modules[@]}"; do
-    if grep -q "^\\- ${module}$" "$adoption_doc" 2>/dev/null; then
-      already_enabled+=("$module")
-    fi
-  done
-fi
-
+# Check which are already installed vs new
 new_modules=()
+update_modules=()
 for module in "${modules[@]}"; do
-  skip=false
-  for enabled in "${already_enabled[@]}"; do
-    if [[ "$module" == "$enabled" ]]; then
-      skip=true
-      break
-    fi
-  done
-  if ! $skip; then
+  if [[ "${installed_map[$module]:-}" == "installed" ]]; then
+    update_modules+=("$module")
+  else
     new_modules+=("$module")
   fi
 done
 
-if [[ ${#already_enabled[@]} -gt 0 ]]; then
-  echo "skipping already-enabled modules: ${already_enabled[*]}" >&2
+if [[ ${#update_modules[@]} -gt 0 ]]; then
+  echo ""
+  echo "will update: ${update_modules[*]}"
+fi
+if [[ ${#new_modules[@]} -gt 0 ]]; then
+  echo "will install: ${new_modules[*]}"
 fi
 
-if [[ ${#new_modules[@]} -eq 0 ]]; then
-  echo "all requested modules are already enabled, nothing to do"
+echo ""
+read -r -p "Proceed? [Y/n] " confirm
+if [[ -n "$confirm" ]] && [[ "$confirm" != "y" ]] && [[ "$confirm" != "Y" ]] && [[ "$confirm" != "yes" ]]; then
+  echo "cancelled"
   exit 0
 fi
 
-bootstrap_version="$(git -C "$repo_root" rev-parse --short HEAD 2>/dev/null || echo "uncommitted")"
-
-echo "updating $target_dir with modules: ${new_modules[*]}"
-echo "bootstrap version: $bootstrap_version"
-
-if $is_bootstrapped; then
-  echo "mode: merge (bootstrapped project)"
-else
-  echo "mode: isolate (non-bootstrapped project)"
-fi
-
 if $dry_run; then
-  echo "[dry-run] would copy these modules:"
-  for module in "${new_modules[@]}"; do
-    if $is_bootstrapped; then
-      echo "  - $module → merge into project root"
-    else
-      echo "  - $module → .bootstrap/modules/$module/"
-    fi
+  echo "[dry-run] would copy:"
+  for module in "${modules[@]}"; do
+    echo "  - $module → .claude/skills/${module}.md"
   done
   exit 0
 fi
 
-# ── copy modules ──────────────────────────────────────────────
+# ── copy skills ─────────────────────────────────────────────────
 
-for module in "${new_modules[@]}"; do
+mkdir -p "$skills_dir"
+
+for module in "${modules[@]}"; do
   module_path="$modules_root/$module"
   if [[ ! -d "$module_path" ]]; then
     echo "module not found: $module" >&2
     exit 1
   fi
 
-  if $is_bootstrapped; then
-    cp -R "$module_path"/. "$target_dir"/
-    echo "  copied $module → project root"
+  # Copy the skill file and stamp module-specific version
+  module_version=$(git -C "$repo_root" log -1 --format=%h -- "$module_path" 2>/dev/null)
+  module_version="${module_version:-unknown}"
+  cp "$module_path/skill.md" "$skills_dir/${module}.md"
+  sed -i "s/{{BOOTSTRAP_VERSION}}/${module_version}/" "$skills_dir/${module}.md"
+  echo "  skill: .claude/skills/${module}.md  (v ${module_version})"
+
+  # Copy supporting assets
+  dest="$skills_dir/$module"
+  rm -rf "$dest"
+  mkdir -p "$dest"
+
+  if [[ "$module" == "docs-dual-format" ]]; then
+    rsync -av --exclude='README.md' --exclude='skill.md' "$module_path/" "$dest/" | tail -1
   else
-    dest="$target_dir/.bootstrap/modules/$module"
-    mkdir -p "$dest"
-    cp -R "$module_path"/* "$dest"/
-    echo "  copied $module → .bootstrap/modules/$module/"
+    rsync -av --exclude='README.md' --exclude='skill.md' --exclude='docs/' "$module_path/" "$dest/" | tail -1
   fi
 done
 
-# ── update adoption record (bootstrapped only) ─────────────────
+# ── record source ───────────────────────────────────────────────
 
-if $is_bootstrapped; then
-  python3 - "$target_dir" "$bootstrap_version" "${new_modules[@]}" <<'PY'
-import pathlib
-import sys
-
-target_dir = pathlib.Path(sys.argv[1])
-bootstrap_version = sys.argv[2]
-new_modules = sys.argv[3:]
-
-adoption_path = target_dir / "docs" / "BOOTSTRAP_ADOPTION.md"
-text = adoption_path.read_text()
-
-text = text.replace(
-    "- repo: {{BOOTSTRAP_SOURCE}}",
-    "- repo: agent-bootstrap"
-)
-text = text.replace(
-    "- version: {{BOOTSTRAP_VERSION}}",
-    f"- version: {bootstrap_version} (updated)"
-)
-
-lines = text.splitlines()
-new_lines = []
-in_modules = False
-current_modules = set()
-
-for line in lines:
-    if line == "## Enabled Modules":
-        in_modules = True
-        new_lines.append(line)
-        new_lines.append("")
-        for old_line in lines[lines.index(line) + 1:]:
-            stripped = old_line.strip()
-            if stripped.startswith("- "):
-                mod = stripped[2:]
-                if mod != "none":
-                    current_modules.add(mod)
-            elif old_line.startswith("## "):
-                break
-        for mod in sorted(current_modules):
-            new_lines.append(f"- {mod}")
-        for mod in new_modules:
-            if mod not in current_modules:
-                new_lines.append(f"- {mod}")
-                current_modules.add(mod)
-        new_lines.append("")
-        continue
-    if in_modules:
-        if line.startswith("## "):
-            in_modules = False
-            new_lines.append(line)
-        continue
-    else:
-        new_lines.append(line)
-
-adoption_path.write_text("\n".join(new_lines) + "\n")
-
-readme_tpl = target_dir / "README.md.tpl"
-readme = target_dir / "README.md"
-if readme_tpl.exists():
-    pass
-elif readme.exists():
-    readme_text = readme.read_text()
-    for old, new in {"{{PROJECT_NAME}}": target_dir.name}.items():
-        readme_text = readme_text.replace(old, new)
-    readme.write_text(readme_text)
-PY
-
-  echo ""
-  echo "update complete"
-  echo "modules now enabled:"
-  grep "^\\- " "$adoption_doc" | sed 's/^/  /'
-else
-  # ── record bootstrap source in .bootstrap/ ──────────────────
-  cat > "$target_dir/.bootstrap/source.txt" <<EOF
+cat > "$skills_dir/.bootstrap-source.txt" <<EOF
 repo: agent-bootstrap
 version: $bootstrap_version
-installed: $(date -u +%Y-%m-%dT%H:%M:%SZ)
-modules: ${new_modules[*]}
+updated: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+modules: ${modules[*]}
 EOF
 
-  echo ""
-  echo "update complete — modules placed in .bootstrap/modules/"
-  echo ""
-  echo "integration hints:"
-  for module in "${new_modules[@]}"; do
-    case "$module" in
-      docs-dual-format)
-        echo "  docs-dual-format:"
-        echo "    start doc server:  python3 -m http.server 8080 -d .bootstrap/modules/docs-dual-format/docs/html/"
-        echo "    symlink to root:   ln -s .bootstrap/modules/docs-dual-format/docs docs"
-        ;;
-      *)
-        echo "  $module: see .bootstrap/modules/$module/README.md"
-        ;;
-    esac
-  done
-fi
+echo ""
+echo "done — skills in .claude/skills/"
