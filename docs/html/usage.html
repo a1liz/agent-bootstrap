@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>使用指南 — Agent Project Bootstrap</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav>
+  <span class="brand">Agent Bootstrap</span>
+  <a href="index.html">总览</a>
+  <a href="architecture.html">架构</a>
+  <a href="core.html">Core 规则</a>
+  <a href="modules.html">Modules</a>
+  <a href="usage.html" class="active">使用指南</a>
+</nav>
+
+<h1>使用指南</h1>
+
+<div class="toc">
+<ol>
+  <li><a href="#bootstrap">Bootstrap 新项目</a></li>
+  <li><a href="#update">更新已有项目</a></li>
+  <li><a href="#validate">验证完整性</a></li>
+  <li><a href="#checklists">检查清单</a></li>
+  <li><a href="#docs">查看文档</a></li>
+</ol>
+</div>
+
+<h2 id="bootstrap">1. Bootstrap 新项目</h2>
+
+<h3>最小项目</h3>
+<pre><code>scripts/bootstrap_new_project.sh /path/to/my-agent-project</code></pre>
+
+<h3>带常用可选模块</h3>
+<pre><code>scripts/bootstrap_new_project.sh /path/to/my-agent-project \
+  --with-eval-harness \
+  --with-multi-run \
+  --with-tmux</code></pre>
+
+<h3>全部可用模块</h3>
+<pre><code>scripts/bootstrap_new_project.sh /path/to/my-agent-project \
+  --with-eval-harness \
+  --with-multi-run \
+  --with-tmux \
+  --with-browser-adapter \
+  --with-docs-dual-format</code></pre>
+
+<div class="note">
+  <strong>注意</strong>：目标目录必须不存在。脚本会：
+  <ul>
+    <li>将 <code>templates/core/</code> 复制到目标目录</li>
+    <li>可选叠加选定的模块模板</li>
+    <li>创建 <code>src/</code> 和 <code>tests/</code></li>
+    <li>从模板生成 <code>README.md</code></li>
+    <li>在 <code>docs/BOOTSTRAP_ADOPTION.md</code> 中记录 bootstrap 来源/版本</li>
+  </ul>
+</div>
+
+<h2 id="update">2. 更新已有项目</h2>
+
+<p>向之前 bootstrap 的项目或任意仓库添加新模块：</p>
+
+<h3>Bootstrap 项目</h3>
+<pre><code>scripts/update_existing_project.sh /path/to/existing-project --with-docs-dual-format</code></pre>
+<p>模块文件合并到项目根目录，<code>BOOTSTRAP_ADOPTION.md</code> 自动更新。</p>
+
+<h3>非 Bootstrap 项目</h3>
+<pre><code>scripts/update_existing_project.sh /path/to/any-repo --with-docs-dual-format</code></pre>
+<p>模块文件隔离在 <code>.bootstrap/modules/&lt;name&gt;/</code> 下，不影响现有目录结构。脚本会打印集成提示。</p>
+
+<h3>脚本行为</h3>
+<table>
+  <tr><th>特性</th><td>自动检测项目类型并适配策略</td></tr>
+  <tr><th>幂等</th><td>已启用的模块会被跳过</td></tr>
+  <tr><th>预览</th><td><code>--dry-run</code> 标志预览即将执行的操作</td></tr>
+</table>
+
+<h2 id="validate">3. 验证完整性</h2>
+<pre><code>scripts/validate_template_integrity.sh</code></pre>
+<p>检查所有文档化的 Core 和 Module 模板表面在更改后仍然存在。</p>
+
+<h2 id="checklists">4. 检查清单</h2>
+
+<h3>新项目检查清单</h3>
+<ul>
+  <li>确认 <code>docs/BOOTSTRAP_ADOPTION.md</code> 存在并命名已采纳的 core</li>
+  <li>确认 <code>docs/OPERATIONS.md</code> 存在并告知运维人员首先查看哪里</li>
+  <li>确认 <code>artifacts/runs/</code> 存在作为运行时工作空间根目录</li>
+  <li>确认运行时输出不会落地到版本化源目录</li>
+  <li>确认日志和状态文件位置已文档化</li>
+  <li>确认 <code>.gitignore</code> 排除运行时制品和本地状态</li>
+  <li>确认 bootstrap 源版本已记录</li>
+  <li>确认是否需要高级评估隔离</li>
+  <li>确认是否应采纳上下文、工具或交付模块</li>
+</ul>
+
+<h3>模块选择检查清单</h3>
+<ul>
+  <li>项目是否需要专用评估目录和可重复回归路径？</li>
+  <li>项目是否比较多次运行或维护命名运行组？</li>
+  <li>项目是否需要分离式长时间终端观察（如 tmux）？</li>
+  <li>项目是否需要比 Core 基线更严格的隔离或编排？</li>
+  <li>项目是否集成浏览器支持工具或浏览器自动化？</li>
+  <li>项目是否需要双格式文档（CLI md + 浏览器 HTML）？</li>
+</ul>
+
+<h2 id="docs">5. 查看文档</h2>
+
+<h3>启动文档服务</h3>
+<pre><code>cd agent-bootstrap
+python3 -m http.server 8080 -d docs/html/</code></pre>
+
+<h3>SSH 隧道（远程服务器）</h3>
+<pre><code># 在本地机器执行：
+ssh -L 8080:127.0.0.1:8080 -N user@&lt;服务器地址&gt;
+
+# 浏览器打开 http://localhost:8080</code></pre>
+
+<div class="note">
+  <strong>提示</strong>：所有 HTML 页面共享同一个 <code>style.css</code> 和导航栏。Markdown 源文件（内容对等）位于 <code>docs/</code> 的各个子目录中。
+</div>
+
+<footer>Agent Project Bootstrap — Usage Guide</footer>
+</body>
+</html>

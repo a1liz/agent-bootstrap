@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Core 规则 — Agent Project Bootstrap</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav>
+  <span class="brand">Agent Bootstrap</span>
+  <a href="index.html">总览</a>
+  <a href="architecture.html">架构</a>
+  <a href="core.html" class="active">Core 规则</a>
+  <a href="modules.html">Modules</a>
+  <a href="usage.html">使用指南</a>
+</nav>
+
+<h1>Core 规则</h1>
+<p>五条基线规则，每个 bootstrap 项目都应该遵循。详见 <code>templates/core/</code> 和 <code>docs/core/</code>。</p>
+
+<!-- Runtime Layout -->
+<div class="phase">
+  <div class="phase-header">
+    <strong>1. Runtime Layout</strong>
+    <span class="badge badge-core">core</span>
+  </div>
+  <div class="phase-body">
+    <p>从第一天起就将源代码、运行时状态和导出的实验输出分开。</p>
+    <h3>规则</h3>
+    <ul>
+      <li>仓库根目录仅保留源代码、配置、测试、文档和版本化资产</li>
+      <li>将实时运行输出放在专用运行时工作空间下，如 <code>artifacts/runs/&lt;run-name&gt;/</code></li>
+      <li>将生成的代码、日志、保存的状态和评估结果保留在运行时工作空间内</li>
+      <li>默认将运行时工作空间视为可丢弃的，除非显式导出</li>
+    </ul>
+    <h3>推荐布局</h3>
+    <pre><code>artifacts/
+  runs/
+    default/
+      phase_state.json
+      convergence_state.json
+      traces_config.json
+      events.jsonl
+      generations/
+      analysis/
+      guidance/
+      trace_logs/
+      build_logs/</code></pre>
+  </div>
+</div>
+
+<!-- Observability -->
+<div class="phase">
+  <div class="phase-header">
+    <strong>2. Observability</strong>
+    <span class="badge badge-core">core</span>
+  </div>
+  <div class="phase-body">
+    <p>默认日志应针对在终端观察长时间运行进程的操作员进行优化。</p>
+    <h3>规则</h3>
+    <ul>
+      <li>优先使用高信号单行日志，而非冗长文本</li>
+      <li>对一级事件使用稳定前缀</li>
+      <li>始终打印重要制品的路径</li>
+      <li>同时将关键事件持久化到结构化日志文件 <code>events.jsonl</code></li>
+    </ul>
+    <h3>推荐事件类</h3>
+    <table>
+      <tr><td><code>RUN</code></td><td>运行上下文和生命周期</td><td><code>CHUNK</code></td><td>块启动和完成</td></tr>
+      <tr><td><code>RESUME</code></td><td>恢复状态</td><td><code>CONVERGENCE</code></td><td>平台或收敛检查</td></tr>
+      <tr><td><code>PHASE</code></td><td>阶段边界</td><td><code>EVAL</code></td><td>策略/候选评估上下文</td></tr>
+      <tr><td><code>TRACE</code></td><td>每个输入的跟踪结果</td><td><code>BUILD</code></td><td>编译或构建失败</td></tr>
+      <tr><td><code>SIGNAL</code></td><td>中断和关闭触发器</td><td><code>CLEANUP</code></td><td>清理操作</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- State And Resume -->
+<div class="phase">
+  <div class="phase-header">
+    <strong>3. State And Resume</strong>
+    <span class="badge badge-core">core</span>
+  </div>
+  <div class="phase-body">
+    <p>可恢复的 pipeline 只有在状态文件与实际进度匹配时才可信。</p>
+    <h3>规则</h3>
+    <ul>
+      <li>在每个完成的 chunk 或等效持久里程碑后保存状态</li>
+      <li>不在恢复路径上重新初始化状态</li>
+      <li>将收敛状态与阶段状态分开保存</li>
+      <li>确保保存的计数器与生成的结果文件匹配</li>
+      <li>将保存状态与保存输出之间的不匹配视为 bug</li>
+    </ul>
+    <h3>最低状态文件</h3>
+    <pre><code>phase_state.json
+convergence_state.json
+traces_config.json</code></pre>
+  </div>
+</div>
+
+<!-- Repo Hygiene -->
+<div class="phase">
+  <div class="phase-header">
+    <strong>4. Repo Hygiene</strong>
+    <span class="badge badge-core">core</span>
+  </div>
+  <div class="phase-body">
+    <p>Agent-heavy 项目如果不将生成内容和本地内容与版本化内容明确分离，会很快失控。</p>
+    <h3>规则</h3>
+    <ul>
+      <li>将 <code>.env.local</code> 等密钥加入 ignore</li>
+      <li>忽略运行时工作空间、生成的策略、缓存和测试临时目录</li>
+      <li>仅版本化手工维护的源策略和有意的导出制品</li>
+      <li>保持提交边界主题明确且足够小以便审查</li>
+    </ul>
+    <h3>推荐 Ignore 模式</h3>
+    <pre><code>.env.local
+.pytest_cache/
+__pycache__/
+artifacts/runs/
+repl/eval_*/</code></pre>
+  </div>
+</div>
+
+<!-- Minimal Isolation -->
+<div class="phase">
+  <div class="phase-header">
+    <strong>5. Minimal Isolation</strong>
+    <span class="badge badge-core">core</span>
+  </div>
+  <div class="phase-body">
+    <p>运行时执行不应修改版本化源代码，也不应模糊持久源文件和可丢弃运行输出之间的界限。</p>
+    <h3>规则</h3>
+    <ul>
+      <li>不将日志、生成的代码、状态文件或评估输出写回版本化源目录</li>
+      <li>将可变运行时路径保留在运行时工作空间内，与具体运行绑定</li>
+      <li>如果工具在执行过程中会修改文件，将其指向运行本地副本</li>
+      <li>仅在可安全重用且无修改的情况下使用共享只读输入</li>
+    </ul>
+  </div>
+</div>
+
+<footer>Agent Project Bootstrap — Core Rules</footer>
+</body>
+</html>

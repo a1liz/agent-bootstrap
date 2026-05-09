@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>架构与采纳模型 — Agent Project Bootstrap</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav>
+  <span class="brand">Agent Bootstrap</span>
+  <a href="index.html">总览</a>
+  <a href="architecture.html" class="active">架构</a>
+  <a href="core.html">Core 规则</a>
+  <a href="modules.html">Modules</a>
+  <a href="usage.html">使用指南</a>
+</nav>
+
+<h1>架构与采纳模型</h1>
+
+<h2>推荐方法</h2>
+<div class="note">
+  <strong>scaffold + selective modules + reference docs</strong>
+  <p>生成本地基线 → 只复制项目需要拥有的文件 → 按需引入可选模块 → 其余保持引用</p>
+</div>
+
+<h2>为什么不默认使用 Submodule</h2>
+<p>将此仓库作为 <code>submodule</code> 使用通常很别扭：</p>
+<ul>
+  <li>大多数采纳的文件需要本地编辑</li>
+  <li>项目会以不同速度分叉演进</li>
+  <li>同一规则在本地和上游同时存在时所有权模糊</li>
+  <li>许多文档作为参考有价值，但不应该在每个项目中维护</li>
+</ul>
+<p><code>submodule</code> 对只读标准镜像仍然合理，但不应该是默认采纳路径。</p>
+
+<h2>Bootstrap 层次</h2>
+
+<div class="diagram">
+┌──────────────────────────────────────────────────────────────────┐
+│                    agent-bootstrap/                               │
+│                                                                  │
+│  ┌──────────────────────────────────────────────────────────┐    │
+│  │  templates/core/          ← 基线，每个项目都要            │    │
+│  │  · README.md.tpl          · .gitignore                    │    │
+│  │  · docs/BOOTSTRAP_ADOPTION.md                             │    │
+│  │  · docs/OPERATIONS.md     · schemas/                      │    │
+│  │  · scripts/validate_repo_structure.sh                     │    │
+│  │  · artifacts/runs/                                        │    │
+│  └──────────────────────────────────────────────────────────┘    │
+│                                                                  │
+│  ┌──────────────────────────────────────────────────────────┐    │
+│  │  templates/modules/       ← 可选附加模块                  │    │
+│  │  · tmux/                  · eval-harness/                 │    │
+│  │  · multi-run/             · browser-adapter/              │    │
+│  │  · docs-dual-format/                                      │    │
+│  └──────────────────────────────────────────────────────────┘    │
+│                                                                  │
+│  ┌──────────────────────────────────────────────────────────┐    │
+│  │  docs/                    ← 参考材料，通常不复制          │    │
+│  │  · core/                  · modules/                      │    │
+│  │  · adoption-model.md      · overview.md                   │    │
+│  └──────────────────────────────────────────────────────────┘    │
+└──────────────────────────────────────────────────────────────────┘
+</div>
+
+<h2>什么会被复制</h2>
+<table>
+  <tr><th>内容</th><th>说明</th></tr>
+  <tr><td>最小仓库布局</td><td>artifacts/, docs/, schemas/, scripts/</td></tr>
+  <tr><td>运行时工作空间基线</td><td>artifacts/runs/ 作为一次性运行输出的默认位置</td></tr>
+  <tr><td>.gitignore 基线</td><td>忽略本地密钥、缓存、运行时工作空间、评测临时文件</td></tr>
+  <tr><td>运维与采纳文档</td><td>OPERATIONS.md, BOOTSTRAP_ADOPTION.md</td></tr>
+  <tr><td>状态与事件 Schema 样例</td><td>JSON schema 与示例文件</td></tr>
+  <tr><td>最小验证脚本</td><td>validate_repo_structure.sh</td></tr>
+  <tr><td>选定的模块模板</td><td>项目选择启用的模块</td></tr>
+</table>
+
+<h2>什么保持为引用</h2>
+<table>
+  <tr><th>内容</th><th>原因</th></tr>
+  <tr><td>理念与权衡解释</td><td>理解"为什么"，但不属于运行时行为</td></tr>
+  <tr><td>反模式与迁移说明</td><td>按需查阅，不需要常驻项目中</td></tr>
+  <tr><td>项目未采纳的可选模块</td><td>避免膨胀</td></tr>
+  <tr><td>组织级指导</td><td>跨项目相关，但不是项目运行时一部分</td></tr>
+</table>
+
+<h2>项目级所有权</h2>
+<div class="note">
+  <strong>关键原则</strong>
+  <p>模板一旦复制，项目就拥有它们。Bootstrap 仓库是新起点的来源，而不是每个项目必须持续跟踪的运行时依赖。</p>
+</div>
+
+<h2>对维护者</h2>
+<p>如果更改模板、模块覆盖范围或文档化文件表面，请运行：</p>
+<pre><code>scripts/validate_template_integrity.sh</code></pre>
+
+<footer>Agent Project Bootstrap — Architecture &amp; Adoption Model</footer>
+</body>
+</html>

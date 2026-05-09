@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Modules — Agent Project Bootstrap</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav>
+  <span class="brand">Agent Bootstrap</span>
+  <a href="index.html">总览</a>
+  <a href="architecture.html">架构</a>
+  <a href="core.html">Core 规则</a>
+  <a href="modules.html" class="active">Modules</a>
+  <a href="usage.html">使用指南</a>
+</nav>
+
+<h1>可选模块</h1>
+<p>按需启用的附加模块。从 Core 开始，根据实际工作流需求添加模块。详见 <code>templates/modules/</code> 和 <code>docs/modules/</code>。</p>
+
+<h2>推荐启用顺序</h2>
+<div class="toc">
+<ol>
+  <li><strong>eval-harness</strong> — 显式评估结构和可重复评估循环</li>
+  <li><strong>multi-run</strong> — 多运行管理和比较</li>
+  <li><strong>tmux</strong> — 运维友好的长时间运行和监控</li>
+  <li><strong>browser-adapter</strong> — 浏览器/工具集成支持</li>
+  <li><strong>docs-dual-format</strong> — 双格式文档体系（md + HTML）</li>
+</ol>
+</div>
+
+<!-- Primary Modules -->
+<h2>主要模块</h2>
+
+<div class="phase">
+  <div class="phase-header">
+    <strong>eval-harness</strong>
+    <span class="badge badge-module">module</span>
+  </div>
+  <div class="phase-body">
+    <p>为项目提供显式的评估目录结构和可重复的回归路径。</p>
+    <p><strong>包含：</strong></p>
+    <ul>
+      <li><code>docs/EVALS.md</code> — 评估文档</li>
+      <li><code>evals/</code> — 评估目录</li>
+    </ul>
+    <p><strong>何时启用：</strong>项目需要专用评估目录和可重复回归路径时。</p>
+  </div>
+</div>
+
+<div class="phase">
+  <div class="phase-header">
+    <strong>multi-run</strong>
+    <span class="badge badge-module">module</span>
+  </div>
+  <div class="phase-body">
+    <p>支持项目比较多次运行、跟踪运行组或导出跨命名运行的比较摘要。</p>
+    <h3>要点</h3>
+    <ul>
+      <li>每次运行应有稳定、描述性的名称</li>
+      <li>比较摘要不应混入原始运行日志</li>
+      <li>将导出报告放在专用的 compare 或 report 目录中</li>
+    </ul>
+    <p><strong>包含：</strong><code>docs/MULTI_RUN.md</code>，<code>reports/</code></p>
+    <p><strong>何时启用：</strong>项目需要比较多轮运行或维护命名运行组时。</p>
+  </div>
+</div>
+
+<div class="phase">
+  <div class="phase-header">
+    <strong>tmux</strong>
+    <span class="badge badge-module">module</span>
+  </div>
+  <div class="phase-body">
+    <p>为需要分离/重连同时保持终端可见性的长时间运行操作员提供 tmux 支持。</p>
+    <h3>要点</h3>
+    <ul>
+      <li>使用包含项目或运行名称的稳定描述性会话名</li>
+      <li>将规范日志持久化在运行时工作空间下，即使在 tmux 中启动运行</li>
+      <li>记录如何附加、分离和关联 tmux 会话与运行目录</li>
+    </ul>
+    <p><strong>包含：</strong><code>docs/TMUX_OPERATIONS.md</code>，<code>scripts/launch_in_tmux.sh</code></p>
+    <p><strong>何时启用：</strong>项目需要分离式长时间终端观察时。</p>
+  </div>
+</div>
+
+<!-- Specialized Modules -->
+<h2>专用模块</h2>
+
+<div class="phase">
+  <div class="phase-header">
+    <strong>browser-adapter</strong>
+    <span class="badge badge-module">specialized</span>
+  </div>
+  <div class="phase-body">
+    <p>集成浏览器自动化或浏览器支持工具，产生 traces、screenshots、transcripts 等会话制品。</p>
+    <h3>运行时输出规则</h3>
+    <ul>
+      <li>浏览器制品应落在活动运行时工作空间下</li>
+      <li>操作员应能看到运行了什么浏览器任务、哪个运行触发了它、输出写在哪里</li>
+      <li>失败时立即暴露输出目录和调试制品</li>
+    </ul>
+    <p><strong>包含：</strong><code>docs/BROWSER_ADAPTER.md</code>，<code>artifacts/browser/</code></p>
+    <p><strong>何时启用：</strong>仅在项目明确需要时启用。</p>
+  </div>
+</div>
+
+<div class="phase">
+  <div class="phase-header">
+    <strong>docs-dual-format</strong>
+    <span class="badge badge-todo">new</span>
+  </div>
+  <div class="phase-body">
+    <p>为项目建立双格式文档体系：<code>docs/md/</code>（Markdown 源码）+ <code>docs/html/</code>（HTML 多页展示），内容完全对等，共享暗色主题 CSS + 统一导航。</p>
+    <h3>约束</h3>
+    <ul>
+      <li>内容对等：md 和 html 描述的信息必须一致</li>
+      <li>导航一致性：所有 HTML 页面共享同一个 <code>&lt;nav&gt;</code></li>
+      <li>共享 CSS：所有 HTML 页面引用同一个 <code>style.css</code></li>
+    </ul>
+    <p><strong>包含：</strong><code>docs/md/</code>（OVERVIEW, ARCHITECTURE, USAGE, DESIGN_DECISIONS），<code>docs/html/</code>（index, architecture, usage, design-decisions + style.css）</p>
+    <p><strong>何时启用：</strong>项目需要同时支持 CLI 快速查阅和浏览器展示时。</p>
+  </div>
+</div>
+
+<!-- Reference-Only Modules -->
+<h2>参考模块（仅文档）</h2>
+<p>以下模块有参考文档但尚未有独立模板 — 其指导已融入 Core：</p>
+
+<table>
+  <tr><th>文档</th><th>内容</th></tr>
+  <tr><td><code>advanced-eval-isolation</code></td><td>更严格的隔离：每运行工作空间副本、锁范围、子进程清理、构建/运行日志持久化</td></tr>
+  <tr><td><code>context-and-working-agreements</code></td><td>持久项目上下文、运行时会话上下文、交接笔记、决策记录、不应提交的内容</td></tr>
+  <tr><td><code>tool-integration-contracts</code></td><td>工具形状、操作员可见性、超时与重试策略、输出位置规则、故障暴露要求</td></tr>
+  <tr><td><code>delivery-rhythm-and-evals</code></td><td>阶段分离、最低评估期望、回归检查、里程碑标准</td></tr>
+</table>
+
+<footer>Agent Project Bootstrap — Modules</footer>
+</body>
+</html>

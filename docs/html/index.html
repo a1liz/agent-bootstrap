@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Project Bootstrap — 项目总览</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav>
+  <span class="brand">Agent Bootstrap</span>
+  <a href="index.html" class="active">总览</a>
+  <a href="architecture.html">架构</a>
+  <a href="core.html">Core 规则</a>
+  <a href="modules.html">Modules</a>
+  <a href="usage.html">使用指南</a>
+</nav>
+
+<h1>Agent Project Bootstrap</h1>
+<p><strong>为新 Agent 项目提供可用的工程基线</strong><br><span style="color:var(--muted)">不再每次从零发明仓库结构、运行时布局和运维文档</span></p>
+
+<div style="display:flex;gap:.5rem;flex-wrap:wrap;margin:1rem 0 2rem;">
+  <span class="badge badge-done">Core Templates</span>
+  <span class="badge badge-done">4 Modules</span>
+  <span class="badge badge-done">Bootstrap Script</span>
+  <span class="badge badge-done">Update Script</span>
+  <span class="badge badge-done">Validation</span>
+  <span class="badge badge-done">docs-dual-format</span>
+</div>
+
+<div class="status-grid">
+  <div class="status-card">
+    <h3 style="margin-top:0">Bootstrap Layers</h3>
+    <table style="margin:0">
+      <tr><td style="border:none;color:var(--muted)">Core</td><td style="border:none"><span class="badge badge-core">5 rules</span> 基线模板 — 每个项目都需要</td></tr>
+      <tr><td style="border:none;color:var(--muted)">Modules</td><td style="border:none"><span class="badge badge-module">4 modules</span> 可选能力 — 按需启用</td></tr>
+      <tr><td style="border:none;color:var(--muted)">Reference</td><td style="border:none">理念与迁移材料 — 不复制到项目</td></tr>
+    </table>
+  </div>
+  <div class="status-card">
+    <h3 style="margin-top:0">快速操作</h3>
+    <table style="margin:0">
+      <tr><td style="border:none;color:var(--muted)">新建项目</td><td style="border:none"><code>scripts/bootstrap_new_project.sh</code></td></tr>
+      <tr><td style="border:none;color:var(--muted)">更新项目</td><td style="border:none"><code>scripts/update_existing_project.sh</code></td></tr>
+      <tr><td style="border:none;color:var(--muted)">验证完整性</td><td style="border:none"><code>scripts/validate_template_integrity.sh</code></td></tr>
+    </table>
+  </div>
+</div>
+
+<h2>一句话总结</h2>
+<div class="diagram">
+┌──────────────────────────────────────────────────────────────────┐
+│  Agent Project Bootstrap 帮助团队快速启动新 Agent 项目并保持     │
+│  结构一致性。它让运行时状态、可观测性、状态持久化、评估隔离      │
+│  和仓库卫生从第一天起就可预测。                                  │
+│                                                                  │
+│  通过 scaffold + selective modules + reference docs 模式，       │
+│  只复制项目真正需要拥有的文件，其余保持为引用。                  │
+└──────────────────────────────────────────────────────────────────┘
+</div>
+
+<h2>目标项目类型</h2>
+<p>此 bootstrap 针对具有以下一个或多个特征的项目：</p>
+<ul>
+  <li>长时间运行或可恢复的执行</li>
+  <li>生成的运行时制品</li>
+  <li>迭代评估循环</li>
+  <li>子进程编排</li>
+  <li>带运维监控的工具密集型工作流</li>
+</ul>
+
+<h2>非目标</h2>
+<p>此仓库不是业务域启动套件，不提供产品逻辑、应用框架或技术栈特定的功能代码。<strong>它提供工程结构，而非产品行为。</strong></p>
+
+<h2>典型采纳流程</h2>
+<div class="toc">
+<ol>
+  <li>阅读 <a href="architecture.html">采纳模型</a> 和 <a href="core.html">Core 规则</a></li>
+  <li>用 <code>scripts/bootstrap_new_project.sh</code> 生成新项目</li>
+  <li>决定是否需要可选 <a href="modules.html">Modules</a></li>
+  <li>在新项目中记录采纳内容到 <code>docs/BOOTSTRAP_ADOPTION.md</code></li>
+  <li>让新项目拥有其复制的模板并本地演进</li>
+  <li>当 bootstrap 源发生变化时验证模板完整性</li>
+</ol>
+</div>
+
+<h2>仓库地图</h2>
+<table>
+  <tr><th>路径</th><th>用途</th></tr>
+  <tr><td><code>templates/core/</code></td><td>每个新项目复制的基线文件</td></tr>
+  <tr><td><code>templates/modules/</code></td><td>可选附加模块（tmux, eval-harness, multi-run, browser-adapter, docs-dual-format）</td></tr>
+  <tr><td><code>scripts/bootstrap_new_project.sh</code></td><td>从模板创建新项目</td></tr>
+  <tr><td><code>scripts/update_existing_project.sh</code></td><td>向已有项目添加新模块</td></tr>
+  <tr><td><code>scripts/validate_template_integrity.sh</code></td><td>检查模板表面完整性</td></tr>
+  <tr><td><code>docs/</code></td><td>参考材料和采用指南（此 HTML 文档 + Markdown 源文件）</td></tr>
+  <tr><td><code>checklists/</code></td><td>新项目与模块选择检查清单</td></tr>
+</table>
+
+<footer>Agent Project Bootstrap &nbsp;|&nbsp; 生成时间：2026-05-09</footer>
+</body>
+</html>
