@@ -36,6 +36,7 @@ module_names=(
   "eval-harness"
   "browser-adapter"
   "multi-run"
+  "docs-dual-format"
 )
 
 for module in "${module_names[@]}"; do
@@ -50,6 +51,17 @@ assert_exists "templates/modules/browser-adapter/docs/BROWSER_ADAPTER.md"
 assert_exists "templates/modules/browser-adapter/artifacts/browser/.gitkeep"
 assert_exists "templates/modules/multi-run/docs/MULTI_RUN.md"
 assert_exists "templates/modules/multi-run/reports/.gitkeep"
+
+assert_exists "templates/modules/docs-dual-format/README.md"
+assert_exists "templates/modules/docs-dual-format/docs/html/style.css"
+assert_exists "templates/modules/docs-dual-format/docs/html/index.html"
+assert_exists "templates/modules/docs-dual-format/docs/html/architecture.html"
+assert_exists "templates/modules/docs-dual-format/docs/html/usage.html"
+assert_exists "templates/modules/docs-dual-format/docs/html/design-decisions.html"
+assert_exists "templates/modules/docs-dual-format/docs/md/OVERVIEW.md"
+assert_exists "templates/modules/docs-dual-format/docs/md/ARCHITECTURE.md"
+assert_exists "templates/modules/docs-dual-format/docs/md/USAGE.md"
+assert_exists "templates/modules/docs-dual-format/docs/md/DESIGN_DECISIONS.md"
 
 doc_required=(
   "docs/overview.md"

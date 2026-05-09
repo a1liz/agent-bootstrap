@@ -26,6 +26,7 @@ If you need product logic, framework setup, or business-domain code, this repo d
 - `templates/modules/`: optional add-on modules
 - `scripts/bootstrap_new_project.sh`: creates a new project from the templates
 - `scripts/validate_template_integrity.sh`: checks that documented template surfaces still exist
+- `scripts/update_existing_project.sh`: pushes new modules to a previously bootstrapped project
 - `docs/`: reference material and adoption guidance
 - `examples/minimal-agent-project/`: the expected shape of a minimal generated project
 
@@ -64,6 +65,7 @@ Start with only `core`, then add modules based on actual workflow needs:
 - `--with-multi-run`: for managing multiple runs or run sets
 - `--with-tmux`: for operator-friendly long-running execution and monitoring
 - `--with-browser-adapter`: specialized browser/tool integration support
+- `--with-docs-dual-format`: dual-format docs (md for CLI + HTML for browser) with shared dark-theme CSS
 
 Recommended default order if you are unsure:
 
@@ -72,6 +74,27 @@ Recommended default order if you are unsure:
 3. `multi-run`
 4. `tmux`
 5. `browser-adapter` only if the project really needs it
+6. `docs-dual-format` to set up dual-format documentation early
+
+## Updating An Existing Project
+
+To add a new module to a previously bootstrapped project:
+
+```bash
+scripts/update_existing_project.sh /path/to/existing-project --with-docs-dual-format
+```
+
+The script auto-detects the project type and adapts its strategy:
+
+**Bootstrapped projects** (have `docs/BOOTSTRAP_ADOPTION.md`):
+- merge module files directly into the project root
+- update `docs/BOOTSTRAP_ADOPTION.md` to record new modules
+- skip modules that are already enabled
+
+**Non-bootstrapped projects**:
+- isolate module files under `.bootstrap/modules/<name>/` — zero impact on existing directory structure
+- record installation metadata in `.bootstrap/source.txt`
+- print integration hints (start doc server path, optional symlink command)
 
 ## Typical Adoption Flow
 
@@ -95,3 +118,19 @@ If you change templates, module coverage, or documented file surfaces, run:
 ```bash
 scripts/validate_template_integrity.sh
 ```
+
+## Viewing Project Docs
+
+Start the doc server:
+
+```bash
+python3 -m http.server 8080 -d docs/html/
+```
+
+Then set up an SSH tunnel from your local machine:
+
+```bash
+ssh -L 8080:127.0.0.1:8080 -N user@<server-address>
+```
+
+Open `http://localhost:8080` in a browser. Markdown sources (content-equivalent) live under `docs/md/`.

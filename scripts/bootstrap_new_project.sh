@@ -3,7 +3,7 @@
 set -euo pipefail
 
 usage() {
-  echo "usage: $0 <project-dir> [--with-eval-harness] [--with-multi-run] [--with-tmux] [--with-browser-adapter]" >&2
+  echo "usage: $0 <project-dir> [--with-eval-harness] [--with-multi-run] [--with-tmux] [--with-browser-adapter] [--with-docs-dual-format]" >&2
 }
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -30,6 +30,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --with-multi-run)
       modules+=("multi-run")
+      shift
+      ;;
+    --with-docs-dual-format)
+      modules+=("docs-dual-format")
       shift
       ;;
     --help|-h)
@@ -105,8 +109,18 @@ replacements = {
 for rel_path in [
     "README.md",
     "docs/BOOTSTRAP_ADOPTION.md",
+    "docs/md/OVERVIEW.md",
+    "docs/md/ARCHITECTURE.md",
+    "docs/md/USAGE.md",
+    "docs/md/DESIGN_DECISIONS.md",
+    "docs/html/index.html",
+    "docs/html/architecture.html",
+    "docs/html/usage.html",
+    "docs/html/design-decisions.html",
 ]:
     path = target_dir / rel_path
+    if not path.exists():
+        continue
     text = path.read_text()
     for old, new in replacements.items():
         text = text.replace(old, new)

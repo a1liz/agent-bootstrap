@@ -5,3 +5,4 @@
 - Does the project need detached long-running terminal observation such as tmux?
 - Does the project need heavier isolation or orchestration than the core baseline?
 - Does the project integrate browser-backed tools or browser automation?
+- Does the project need dual-format documentation (md for CLI + HTML for browser)?

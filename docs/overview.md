@@ -39,8 +39,9 @@ The first supported primary modules are:
 - `multi-run`
 - `tmux`
 
-The current specialized module is:
+The current specialized modules are:
 
 - `browser-adapter`
+- `docs-dual-format`
 
 Use `scripts/validate_template_integrity.sh` in this repository to check that documented core and module template surfaces still exist after changes.
