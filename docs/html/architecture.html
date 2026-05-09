@@ -14,6 +14,7 @@
   <a href="modules.html">Modules</a>
   <a href="usage.html">使用指南</a>
 </nav>
+<main>
 
 <h1>架构与采纳模型</h1>
 
@@ -35,32 +36,57 @@
 
 <h2>Bootstrap 层次</h2>
 
-<div class="diagram">
-┌──────────────────────────────────────────────────────────────────┐
-│                    agent-bootstrap/                               │
-│                                                                  │
-│  ┌──────────────────────────────────────────────────────────┐    │
-│  │  templates/core/          ← 基线，每个项目都要            │    │
-│  │  · README.md.tpl          · .gitignore                    │    │
-│  │  · docs/BOOTSTRAP_ADOPTION.md                             │    │
-│  │  · docs/OPERATIONS.md     · schemas/                      │    │
-│  │  · scripts/validate_repo_structure.sh                     │    │
-│  │  · artifacts/runs/                                        │    │
-│  └──────────────────────────────────────────────────────────┘    │
-│                                                                  │
-│  ┌──────────────────────────────────────────────────────────┐    │
-│  │  templates/modules/       ← 可选附加模块                  │    │
-│  │  · tmux/                  · eval-harness/                 │    │
-│  │  · multi-run/             · browser-adapter/              │    │
-│  │  · docs-dual-format/                                      │    │
-│  └──────────────────────────────────────────────────────────┘    │
-│                                                                  │
-│  ┌──────────────────────────────────────────────────────────┐    │
-│  │  docs/                    ← 参考材料，通常不复制          │    │
-│  │  · core/                  · modules/                      │    │
-│  │  · adoption-model.md      · overview.md                   │    │
-│  └──────────────────────────────────────────────────────────┘    │
-└──────────────────────────────────────────────────────────────────┘
+<div class="tree-diagram">
+
+  <div class="tree-root">agent-bootstrap/</div>
+
+  <div class="tree-branches">
+
+    <div class="tree-branch">
+      <div class="tree-branch-hd">
+        <span class="tree-dir">templates/core/</span>
+        <span class="tree-tag">基线，每个项目都要</span>
+      </div>
+      <div class="tree-leaves">
+        <span class="tree-leaf">README.md.tpl</span>
+        <span class="tree-leaf">.gitignore</span>
+        <span class="tree-leaf">docs/BOOTSTRAP_ADOPTION.md</span>
+        <span class="tree-leaf">docs/OPERATIONS.md</span>
+        <span class="tree-leaf">schemas/</span>
+        <span class="tree-leaf">scripts/validate_repo_structure.sh</span>
+        <span class="tree-leaf">artifacts/runs/</span>
+      </div>
+    </div>
+
+    <div class="tree-branch">
+      <div class="tree-branch-hd">
+        <span class="tree-dir">templates/modules/</span>
+        <span class="tree-tag">可选附加模块</span>
+      </div>
+      <div class="tree-leaves">
+        <span class="tree-leaf">tmux/</span>
+        <span class="tree-leaf">eval-harness/</span>
+        <span class="tree-leaf">multi-run/</span>
+        <span class="tree-leaf">browser-adapter/</span>
+        <span class="tree-leaf">docs-dual-format/</span>
+      </div>
+    </div>
+
+    <div class="tree-branch">
+      <div class="tree-branch-hd">
+        <span class="tree-dir">docs/</span>
+        <span class="tree-tag">参考材料，通常不复制</span>
+      </div>
+      <div class="tree-leaves">
+        <span class="tree-leaf">core/</span>
+        <span class="tree-leaf">modules/</span>
+        <span class="tree-leaf">adoption-model.md</span>
+        <span class="tree-leaf">overview.md</span>
+      </div>
+    </div>
+
+  </div>
+
 </div>
 
 <h2>什么会被复制</h2>
@@ -94,6 +120,7 @@
 <p>如果更改模板、模块覆盖范围或文档化文件表面，请运行：</p>
 <pre><code>scripts/validate_template_integrity.sh</code></pre>
 
+</main>
 <footer>Agent Project Bootstrap — Architecture &amp; Adoption Model</footer>
 </body>
 </html>
