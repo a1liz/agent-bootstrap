@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>运维 — {{PROJECT_NAME}}</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav>
+  <span class="brand">{{PROJECT_NAME}}</span>
+  <a href="index.html">总览</a>
+  <a href="architecture.html">架构</a>
+  <a href="usage.html">使用指南</a>
+  <a href="design-decisions.html">设计决策</a>
+  <a href="operations.html" class="active">运维</a>
+  <a href="bootstrap-adoption.html">Bootstrap</a>
+</nav>
+
+<h1>运维手册</h1>
+
+<h2>启动一次运行</h2>
+<p style="color:var(--muted)">记录启动运行的标准命令或入口点。</p>
+
+<h2>运行时产物</h2>
+<p>运行时输出写入 <code>artifacts/runs/&lt;run-name&gt;/</code>。</p>
+
+<h2>日志</h2>
+<p style="color:var(--muted)">记录终端日志、结构化事件和工具日志的写入位置。</p>
+
+<h2>状态文件</h2>
+<p style="color:var(--muted)">记录 phase state、convergence state 和配置快照的存储位置。</p>
+
+<h2>故障排查</h2>
+<ol>
+  <li>检查当前运行目录</li>
+  <li>检查保存的状态文件</li>
+  <li>查看终端/结构化日志</li>
+  <li>检查工具级 stdout/stderr 文件</li>
+</ol>
+
+<footer>{{PROJECT_NAME}} — Operations</footer>
+</body>
+</html>

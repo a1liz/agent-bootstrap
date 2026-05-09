@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bootstrap 采纳记录 — {{PROJECT_NAME}}</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav>
+  <span class="brand">{{PROJECT_NAME}}</span>
+  <a href="index.html">总览</a>
+  <a href="architecture.html">架构</a>
+  <a href="usage.html">使用指南</a>
+  <a href="design-decisions.html">设计决策</a>
+  <a href="operations.html">运维</a>
+  <a href="bootstrap-adoption.html" class="active">Bootstrap</a>
+</nav>
+
+<h1>Bootstrap 采纳记录</h1>
+
+<h2>Core</h2>
+<table>
+  <tr><td>runtime-layout</td><td><span class="badge badge-done">✓</span></td></tr>
+  <tr><td>observability</td><td><span class="badge badge-done">✓</span></td></tr>
+  <tr><td>state-and-resume</td><td><span class="badge badge-done">✓</span></td></tr>
+  <tr><td>repo-hygiene</td><td><span class="badge badge-done">✓</span></td></tr>
+  <tr><td>minimal-isolation</td><td><span class="badge badge-done">✓</span></td></tr>
+</table>
+
+<h2>Enabled Modules</h2>
+<table>
+  <tr><td colspan="2" style="color:var(--muted)">{{BOOTSTRAP_MODULES}}</td></tr>
+</table>
+
+<h2>Deviations</h2>
+<p style="color:var(--muted)">— none —</p>
+
+<h2>Source</h2>
+<table>
+  <tr><td>repo</td><td>{{BOOTSTRAP_SOURCE}}</td></tr>
+  <tr><td>version</td><td>{{BOOTSTRAP_VERSION}}</td></tr>
+</table>
+
+<footer>{{PROJECT_NAME}} — Bootstrap Adoption</footer>
+</body>
+</html>
