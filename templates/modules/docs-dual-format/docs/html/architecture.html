@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>架构 — {{PROJECT_NAME}}</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav>
+  <span class="brand">{{PROJECT_NAME}}</span>
+  <a href="index.html">总览</a>
+  <a href="architecture.html" class="active">架构</a>
+  <a href="usage.html">使用指南</a>
+  <a href="design-decisions.html">设计决策</a>
+</nav>
+
+<h1>项目架构</h1>
+
+<h2>整体架构</h2>
+<div class="diagram">
+┌──────────────────────────────────────────────────────────────────┐
+│                    {{PROJECT_NAME}}/                              │
+│  ┌─────────────────────┐    ┌──────────────────────────────┐    │
+│  │   模块 A             │    │   模块 B                     │    │
+│  │                      │    │                              │    │
+│  │  · 职责简述          │    │  · 职责简述                  │    │
+│  │  · 关键接口          │    │  · 关键接口                  │    │
+│  └─────────────────────┘    └──────────────────────────────┘    │
+└──────────────────────────────────────────────────────────────────┘
+</div>
+
+<h2>模块分工</h2>
+<table>
+  <tr><th>模块</th><th>职责</th><th>输入</th><th>输出</th></tr>
+  <tr><td>模块 A</td><td>—</td><td>—</td><td>—</td></tr>
+  <tr><td>模块 B</td><td>—</td><td>—</td><td>—</td></tr>
+</table>
+
+<h2>数据流</h2>
+<div class="diagram">
+Input → Module A → Module B → Output
+</div>
+
+<h2>关键 Schema</h2>
+<table>
+  <tr><th>字段</th><th>类型</th><th>说明</th></tr>
+  <tr><td><code>—</code></td><td>—</td><td>—</td></tr>
+</table>
+
+<footer>{{PROJECT_NAME}} — Architecture</footer>
+</body>
+</html>
