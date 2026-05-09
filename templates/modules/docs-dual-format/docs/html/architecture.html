@@ -12,21 +12,43 @@
   <a href="architecture.html" class="active">架构</a>
   <a href="usage.html">使用指南</a>
   <a href="design-decisions.html">设计决策</a>
+  <a href="operations.html">运维</a>
+  <a href="bootstrap-adoption.html">Bootstrap</a>
 </nav>
 
 <h1>项目架构</h1>
 
 <h2>整体架构</h2>
-<div class="diagram">
-┌──────────────────────────────────────────────────────────────────┐
-│                    {{PROJECT_NAME}}/                              │
-│  ┌─────────────────────┐    ┌──────────────────────────────┐    │
-│  │   模块 A             │    │   模块 B                     │    │
-│  │                      │    │                              │    │
-│  │  · 职责简述          │    │  · 职责简述                  │    │
-│  │  · 关键接口          │    │  · 关键接口                  │    │
-│  └─────────────────────┘    └──────────────────────────────┘    │
-└──────────────────────────────────────────────────────────────────┘
+<div class="tree-diagram">
+
+  <div class="tree-root">{{PROJECT_NAME}}/</div>
+
+  <div class="tree-branches">
+
+    <div class="tree-branch">
+      <div class="tree-branch-hd">
+        <span class="tree-dir">模块 A</span>
+        <span class="tree-tag">核心模块</span>
+      </div>
+      <div class="tree-leaves">
+        <span class="tree-leaf">职责简述</span>
+        <span class="tree-leaf">关键接口</span>
+      </div>
+    </div>
+
+    <div class="tree-branch">
+      <div class="tree-branch-hd">
+        <span class="tree-dir">模块 B</span>
+        <span class="tree-tag">辅助模块</span>
+      </div>
+      <div class="tree-leaves">
+        <span class="tree-leaf">职责简述</span>
+        <span class="tree-leaf">关键接口</span>
+      </div>
+    </div>
+
+  </div>
+
 </div>
 
 <h2>模块分工</h2>
@@ -37,8 +59,14 @@
 </table>
 
 <h2>数据流</h2>
-<div class="diagram">
-Input → Module A → Module B → Output
+<div class="flow-diagram">
+  <span class="flow-node">Input</span>
+  <span class="flow-arrow">→</span>
+  <span class="flow-node">Module A</span>
+  <span class="flow-arrow">→</span>
+  <span class="flow-node">Module B</span>
+  <span class="flow-arrow">→</span>
+  <span class="flow-node">Output</span>
 </div>
 
 <h2>关键 Schema</h2>
