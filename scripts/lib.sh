@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+# Shared helpers for agent-bootstrap scripts.
+# Source this file: . "$script_dir/lib.sh"
+
+# Parse the description from a skill.md YAML frontmatter.
+skill_description() {
+  sed -n '/^---$/,/^---$/p' "$1" | sed -n 's/^description: //p' | head -1
+}
+
+# Print a numbered menu from a list of module names.
+# $1 = array of module names (by nameref)
+# Output goes to stderr so it doesn't mix with return values.
+# Sets global array MENU_MODULES.
+print_module_menu() {
+  local -n _modules=$1
+  MENU_MODULES=()
+  local i=1
+  for module in "${_modules[@]}"; do
+    MENU_MODULES+=("$module")
+    local desc
+    desc=$(skill_description "$modules_root/$module/skill.md" 2>/dev/null || echo "(no description)")
+    echo "  $i. $module — $desc" >&2
+    ((i++))
+  done
+}
+
+# Print a numbered menu with install status.
+# $1 = array of module names (by nameref)
+# $2 = associative array module→status (by nameref, status="installed" or "")
+print_module_menu_with_status() {
+  local -n _modules2=$1
+  local -n _statuses=$2
+  MENU_MODULES=()
+  local i=1
+  for module in "${_modules2[@]}"; do
+    MENU_MODULES+=("$module")
+    local desc
+    desc=$(skill_description "$modules_root/$module/skill.md" 2>/dev/null || echo "(no description)")
+    local mark="[ ]"
+    if [[ "${_statuses[$module]:-}" == "installed" ]]; then
+      mark="[✓]"
+    fi
+    echo "  $i. $mark $module — $desc" >&2
+    ((i++))
+  done
+}
+
+# Prompt user to pick modules from the menu (uses MENU_MODULES from print_*).
+# $1 = "select" (new install) or "update" (add/update existing)
+# Returns selected module names in global array SELECTED_MODULES.
+prompt_module_selection() {
+  local mode="$1"
+  local prompt
+  if [[ "$mode" == "select" ]]; then
+    prompt="Enter numbers to include (comma-separated), 'all', or press Enter for none"
+  else
+    prompt="Enter numbers to install/update (comma-separated), 'all', or press Enter to skip"
+  fi
+
+  SELECTED_MODULES=()
+  echo "" >&2
+  read -r -p "$prompt: " answer
+
+  if [[ -z "$answer" ]]; then
+    return
+  fi
+
+  if [[ "$answer" == "all" ]]; then
+    SELECTED_MODULES=("${MENU_MODULES[@]}")
+    return
+  fi
+
+  IFS=',' read -ra picks <<< "$answer"
+  for pick in "${picks[@]}"; do
+    pick=$(echo "$pick" | xargs)
+    local n=${#MENU_MODULES[@]}
+    if [[ "$pick" =~ ^[0-9]+$ ]] && (( pick >= 1 && pick <= n )); then
+      SELECTED_MODULES+=("${MENU_MODULES[$((pick - 1))]}")
+    fi
+  done
+}
