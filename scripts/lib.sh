@@ -26,7 +26,8 @@ print_module_menu() {
 
 # Print a numbered menu with install status.
 # $1 = array of module names (by nameref)
-# $2 = associative array module→status (by nameref, status="installed" or "")
+# $2 = associative array module→status (by nameref)
+#      status: "current" / "outdated" / "" (not installed)
 print_module_menu_with_status() {
   local -n _modules2=$1
   local -n _statuses=$2
@@ -36,10 +37,13 @@ print_module_menu_with_status() {
     MENU_MODULES+=("$module")
     local desc
     desc=$(skill_description "$modules_root/$module/skill.md" 2>/dev/null || echo "(no description)")
-    local mark="[ ]"
-    if [[ "${_statuses[$module]:-}" == "installed" ]]; then
-      mark="[✓]"
-    fi
+    local s="${_statuses[$module]:-}"
+    local mark
+    case "$s" in
+      current)  mark="[✓]" ;;
+      outdated) mark="[!]" ;;
+      *)        mark="[ ]" ;;
+    esac
     echo "  $i. $mark $module — $desc" >&2
     ((i++))
   done

@@ -92,14 +92,45 @@ if [[ -f "$source_record" ]]; then
   has_skills=true
 fi
 
+# List all available modules from template dir
+all_modules=()
+for d in "$modules_root"/*/; do
+  all_modules+=("$(basename "$d")")
+done
+
+# Read installed skill versions
 installed_skills=()
+declare -A installed_versions
 if [[ -d "$skills_dir" ]]; then
   for f in "$skills_dir"/*.md; do
     if [[ -f "$f" ]]; then
-      installed_skills+=("$(basename "$f" .md)")
+      _name=$(basename "$f" .md)
+      installed_skills+=("$_name")
+      installed_versions["$_name"]=$(awk '/^version:/ {print $2; exit}' "$f")
     fi
   done
 fi
+
+# Compare installed versions against latest from module git history
+declare -A latest_versions skill_status
+for module in "${all_modules[@]}"; do
+  _v=$(git -C "$repo_root" log -1 --format=%h -- "$modules_root/$module" 2>/dev/null)
+  latest_versions["$module"]="${_v:-unknown}"
+done
+
+outdated_count=0
+for module in "${all_modules[@]}"; do
+  if [[ -n "${installed_versions[$module]:-}" ]]; then
+    if [[ "${installed_versions[$module]}" == "${latest_versions[$module]}" ]]; then
+      skill_status["$module"]="current"
+    else
+      skill_status["$module"]="outdated"
+      outdated_count=$((outdated_count + 1))
+    fi
+  else
+    skill_status["$module"]=""
+  fi
+done
 
 local_ver=""
 if [[ -f "$source_record" ]]; then
@@ -118,30 +149,31 @@ else
   echo "Status: clean — no bootstrap or skills detected"
 fi
 
-# ── list available modules ──────────────────────────────────────
-
-all_modules=()
-for d in "$modules_root"/*/; do
-  all_modules+=("$(basename "$d")")
-done
-
 echo ""
 echo "Currently installed skills:"
 if [[ ${#installed_skills[@]} -eq 0 ]]; then
   echo "  (none)"
 else
   for s in "${installed_skills[@]}"; do
-    echo "  - $s"
+    local_v="${installed_versions[$s]:-?}"
+    local_status=""
+    if [[ "${skill_status[$s]:-}" == "outdated" ]]; then
+      local_status=" (v $local_v → ${latest_versions[$s]})"
+    else
+      local_status=" (v $local_v)"
+    fi
+    echo "  - $s$local_status"
   done
+fi
+
+if [[ $outdated_count -gt 0 ]]; then
+  echo ""
+  echo "⚠  $outdated_count skill(s) are outdated and should be updated."
 fi
 
 echo ""
 echo "Available skills:"
-declare -A installed_map
-for s in "${installed_skills[@]}"; do
-  installed_map["$s"]="installed"
-done
-print_module_menu_with_status all_modules installed_map
+print_module_menu_with_status all_modules skill_status
 
 # ── interactive selection ───────────────────────────────────────
 
@@ -160,7 +192,7 @@ fi
 new_modules=()
 update_modules=()
 for module in "${modules[@]}"; do
-  if [[ "${installed_map[$module]:-}" == "installed" ]]; then
+  if [[ -n "${skill_status[$module]:-}" ]]; then
     update_modules+=("$module")
   else
     new_modules+=("$module")
@@ -175,11 +207,13 @@ if [[ ${#new_modules[@]} -gt 0 ]]; then
   echo "will install: ${new_modules[*]}"
 fi
 
-echo ""
-read -r -p "Proceed? [Y/n] " confirm
-if [[ -n "$confirm" ]] && [[ "$confirm" != "y" ]] && [[ "$confirm" != "Y" ]] && [[ "$confirm" != "yes" ]]; then
-  echo "cancelled"
-  exit 0
+if $interactive; then
+  echo ""
+  read -r -p "Proceed? [Y/n] " confirm
+  if [[ -n "$confirm" ]] && [[ "$confirm" != "y" ]] && [[ "$confirm" != "Y" ]] && [[ "$confirm" != "yes" ]]; then
+    echo "cancelled"
+    exit 0
+  fi
 fi
 
 if $dry_run; then
