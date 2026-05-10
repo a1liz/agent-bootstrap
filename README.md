@@ -121,10 +121,19 @@ scripts/validate_template_integrity.sh
 
 ## Viewing Project Docs
 
-Start the doc server:
+Use the included docserver to serve multiple project docs on a single port with a management UI:
 
 ```bash
-python3 -m http.server 8080 -d docs/html/
+# Register this repo as a project
+python3 tools/docserver/docserver.py add --name agent-bootstrap --dir docs/html/
+
+# Or auto-discover from current directory
+python3 tools/docserver/docserver.py serve
+
+# Other commands
+python3 tools/docserver/docserver.py list
+python3 tools/docserver/docserver.py add --dir <path> --name <name>
+python3 tools/docserver/docserver.py remove --name <name>
 ```
 
 Then set up an SSH tunnel from your local machine:
@@ -133,4 +142,4 @@ Then set up an SSH tunnel from your local machine:
 ssh -L 8080:127.0.0.1:8080 -N user@<server-address>
 ```
 
-Open `http://localhost:8080` in a browser. Markdown sources (content-equivalent) live under `docs/md/`.
+Open `http://localhost:8080` in a browser for the project management UI. Markdown sources (content-equivalent) live under `docs/md/`.

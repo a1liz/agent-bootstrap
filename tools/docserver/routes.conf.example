@@ -1,0 +1,6 @@
+# DocServer routes configuration
+# Format: <project-name>  <path-to-docs-directory>
+#
+# Example:
+#   myproject  /home/user/myproject/docs/html
+#   cacheagent  /data/projects/CacheAgent/docs/html

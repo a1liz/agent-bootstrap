@@ -88,6 +88,31 @@ scripts/bootstrap_new_project.sh /path/to/my-agent-project \
 - [examples/minimal-agent-project/README.md](/data/home/liz/agent-bootstrap/examples/minimal-agent-project/README.md)：最小生成项目的外形
 - [checklists/new-project-checklist.md](/data/home/liz/agent-bootstrap/checklists/new-project-checklist.md)：生成后自检清单
 
+## 查看项目文档
+
+使用内置的 docserver 可以在单端口上 serve 多个项目的文档，并提供 Web 管理界面：
+
+```bash
+# 将当前仓库注册为项目
+python3 tools/docserver/docserver.py add --name agent-bootstrap --dir docs/html/
+
+# 或者自动发现当前目录
+python3 tools/docserver/docserver.py serve
+
+# 其他命令
+python3 tools/docserver/docserver.py list
+python3 tools/docserver/docserver.py add --dir <path> --name <name>
+python3 tools/docserver/docserver.py remove --name <name>
+```
+
+然后从本地机器建立 SSH 隧道：
+
+```bash
+ssh -L 8080:127.0.0.1:8080 -N user@<服务器地址>
+```
+
+在浏览器中打开 `http://localhost:8080` 即可进入项目管理界面。Markdown 源码（内容等价）在 `docs/md/` 下。
+
 ## 对维护这个仓库的人
 
 如果你修改了模板、模块覆盖范围，或者文档里提到的文件面，记得运行：
