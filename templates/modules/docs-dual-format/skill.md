@@ -17,9 +17,40 @@ All project documentation in `docs/` must be maintained in two parallel formats:
 
 1. **Content parity**: Every `.md` file in `docs/md/` must have a corresponding `.html` file in `docs/html/` with equivalent information.
 2. **Shared style**: All HTML pages reference the same `style.css` from `docs/html/style.css`.
-3. **Consistent navigation**: All HTML pages share the same `<nav>` with current-page highlighting.
+3. **Consistent navigation**: All HTML pages share the same `<nav>` with current-page highlighting. See Navigation rules below.
 4. **README documents serving**: The project README must include instructions for starting the doc server and SSH tunnel.
 5. **No placeholder text**: After completion, no `docs/md/*.md` file may contain template placeholder text (e.g., "补充…", "待定义", "模块 A"). Every claim must be derived from actual repo analysis.
+
+### Navigation rules
+
+When total documentation pages ≤ 6, use flat `<a>` links in the `<nav>`.
+
+When total pages > 6, group links into 2-4 dropdown menus using the `nav-dropdown` pattern:
+
+```html
+<nav>
+  <span class="brand">Project Name</span>
+  <a href="index.html" class="active">总览</a>
+  <div class="nav-dropdown">
+    <span class="nav-dropdown-trigger active">开发文档</span>
+    <div class="nav-dropdown-menu">
+      <a href="architecture.html" class="active">架构</a>
+      <a href="implementation.html">实现</a>
+      ...
+    </div>
+  </div>
+  ...
+</nav>
+```
+
+Key rules for dropdowns:
+- `<span class="nav-dropdown-trigger">` gets `class="active"` when any child is the current page
+- The specific active child link also gets `class="active"` (shows a dot indicator via `::before`)
+- Each dropdown menu has `z-index: 1000`; the nav itself has `z-index: 100` to prevent body content from occluding the menus
+- The invisible bridge (`::after` pseudo-element, 12px tall) above each menu eliminates the hover gap between trigger and menu items
+- Group pages by reader concern: development docs (architecture, implementation, schemas), operations (usage, deployment, ops), design records (ADRs, roadmap, interviews)
+
+**When the nav changes** (page added/removed/renamed), every HTML file's `<nav>` must be updated identically. Only the `class="active"` positions differ per page.
 
 ## Page structure
 
@@ -72,6 +103,27 @@ When adding a page:
 3. Add the new page to the `<nav>` in every existing HTML page
 4. Update the TOC in `docs/html/index.html`
 
+#### Deep Interview page (optional)
+
+When the project has recorded decision-making interviews (e.g., from OMC deep-interview sessions) or structured ADR discussions, a dedicated deep-interviews page can consolidate these into a top-down reader-friendly format.
+
+Use the `deep-interviews.html` template with the `.di-*` CSS classes:
+
+- `.di-layout` — flex container with sidebar + main content
+- `.di-toc` — sticky sidebar table of contents (anchored per section)
+- `.di-section` — each logical topic as a card
+- `.di-q` / `.di-a` — Q&A pairs within each section (blue left-border for question, gold for answer/conclusion)
+
+Content principles for this page:
+- **Organize top-down, not chronologically.** Group by logical topic (concept → architecture → pipeline → evaluation), not by interview session or round number.
+- **Answers are the developer's refined conclusions, not raw transcripts.** Paraphrase and restate. Keep the reasoning chain, discard conversational filler.
+- **Each Q should represent a challenged assumption or a key fork in the road.** Not every interview round needs its own card — merge adjacent rounds that address the same theme.
+
+Do NOT create this page if:
+- The project has no interview/ADR records to consolidate
+- All decisions are already adequately covered in DESIGN_DECISIONS.md
+- The content would be a single section (one page should cover multiple themes)
+
 ## Workflow
 
 This is a two-phase process. Phase 1 must complete before Phase 2 begins.
@@ -123,3 +175,5 @@ Before claiming completion, verify:
 - [ ] Cross-page links work (both in MD and HTML)
 - [ ] `index.html` TOC lists every page
 - [ ] README includes doc serving instructions
+- [ ] If using dropdown nav: hovering from trigger to menu items is gap-free (no flicker/disappear); dropdown menus are not occluded by page content (body cards, pre blocks, etc.)
+- [ ] If using `.di-*` deep-interview page: content is organized top-down by topic, not chronologically; answers are refined conclusions, not raw transcripts

@@ -6,8 +6,8 @@
 :root {
   --bg:           #171411;
   --bg-deeper:    #12100d;
-  --surface:      #201d18;
-  --surface-hi:   #28251f;
+  --surface:      #1f1b16;
+  --surface-hi:   #27231d;
   --border:       #332e27;
   --border-hi:    #4a3f30;
   --text:         #dbd4c7;
@@ -28,7 +28,7 @@
   --code-bg:      #1c1915;
   --radius:       6px;
   --radius-lg:    10px;
-  --transition:   180ms ease;
+  --transition:   200ms cubic-bezier(0.4, 0, 0.2, 1);
   --font-body:    "Noto Sans SC", "PingFang SC", "Source Han Sans SC",
                   "Microsoft YaHei", system-ui, -apple-system, sans-serif;
   --font-mono:    "JetBrains Mono", "Cascadia Code", "Fira Code",
@@ -51,11 +51,8 @@ body::before {
 body {
   font-family: var(--font-body);
   background:
-    linear-gradient(rgba(255,255,255,0.010) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.010) 1px, transparent 1px),
     radial-gradient(ellipse at 50% 0%, rgba(80,50,20,0.12) 0%, transparent 70%),
     var(--bg);
-  background-size: 52px 52px, 52px 52px, 100% 100%, 100% 100%;
   background-attachment: fixed;
   color: var(--text);
   line-height: 1.72;
@@ -63,7 +60,7 @@ body {
   -webkit-font-smoothing: antialiased;
   max-width: 980px;
   margin: 0 auto;
-  padding: 2.5rem 1.75rem 4rem;
+  padding: 2rem 1.75rem 4rem;
   position: relative;
   z-index: 1;
 }
@@ -92,82 +89,215 @@ body::after {
 /* ── Nav ──────────────────────────────────────────────────────── */
 nav {
   display: flex;
-  align-items: baseline;
-  gap: 1.75rem;
+  align-items: center;
+  gap: .15rem;
   flex-wrap: wrap;
-  margin: -1rem 0 2rem;
-  padding-bottom: .85rem;
+  margin: 0 0 3rem;
+  padding: .7rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
   position: relative;
-}
-
-nav::after {
-  content: '';
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 1px;
-  background: linear-gradient(90deg,
-    transparent 0%,
-    var(--border) 10%,
-    var(--border-hi) 50%,
-    var(--border) 90%,
-    transparent 100%
-  );
+  backdrop-filter: blur(8px);
+  z-index: 100;
+  box-shadow: 0 1px 0 var(--border-hi) inset,
+              0 4px 24px rgba(0,0,0,0.3);
 }
 
 nav .brand {
   color: var(--text-hi);
   font-weight: 700;
-  font-size: .95rem;
-  letter-spacing: 0.04em;
+  font-size: .9rem;
+  letter-spacing: 0.05em;
   margin-right: auto;
   position: relative;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
 }
 
-nav .brand::after {
+nav .brand::before {
   content: '';
-  position: absolute;
-  bottom: -2px; left: 0;
-  width: 100%; height: 1px;
+  display: inline-block;
+  width: 8px; height: 8px;
   background: var(--accent);
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform var(--transition);
+  border-radius: 2px;
+  transform: rotate(45deg);
+  flex-shrink: 0;
+  box-shadow: 0 0 6px rgba(212,149,40,0.4);
+  animation: brandPulse 3s ease-in-out infinite;
 }
 
-nav .brand:hover::after { transform: scaleX(1); }
+@keyframes brandPulse {
+  0%, 100% { box-shadow: 0 0 6px rgba(212,149,40,0.4); }
+  50%      { box-shadow: 0 0 14px rgba(240,184,64,0.6); }
+}
 
 nav a {
   color: var(--muted);
   text-decoration: none;
-  font-size: .88rem;
+  font-size: .84rem;
   font-weight: 500;
   position: relative;
-  padding: 2px 0;
-  transition: color var(--transition);
+  padding: .35em .65em;
+  border-radius: var(--radius);
+  transition: color var(--transition), background var(--transition);
 }
 
-nav a::after {
+nav a:hover {
+  color: var(--text-hi);
+  background: rgba(212,149,40,0.06);
+}
+
+nav a.active {
+  color: var(--accent-glow);
+  background: rgba(212,149,40,0.1);
+}
+
+/* ── Nav Dropdown ─────────────────────────────────────────────── */
+/* AGENT: use nav-dropdown when total pages > 6. Group related pages
+   into 2-4 dropdowns. Set class="active" on trigger + child for current page. */
+
+.nav-dropdown {
+  position: relative;
+  display: inline-flex;
+}
+
+.nav-dropdown-trigger {
+  color: var(--muted);
+  font-size: .84rem;
+  font-weight: 500;
+  padding: .35em .65em;
+  border-radius: var(--radius);
+  cursor: default;
+  user-select: none;
+  white-space: nowrap;
+  transition: color var(--transition), background var(--transition);
+  display: flex;
+  align-items: center;
+  gap: .3em;
+}
+
+.nav-dropdown-trigger::after {
+  content: '';
+  display: inline-block;
+  width: 0; height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid currentColor;
+  opacity: 0.45;
+  transition: opacity var(--transition), transform var(--transition);
+}
+
+.nav-dropdown:hover .nav-dropdown-trigger::after {
+  opacity: 1;
+  transform: rotate(180deg);
+}
+
+.nav-dropdown-trigger:hover {
+  color: var(--text-hi);
+  background: rgba(212,149,40,0.06);
+}
+
+.nav-dropdown-trigger.active {
+  color: var(--accent-glow);
+  background: rgba(212,149,40,0.1);
+}
+
+.nav-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(2px);
+  background: var(--surface-hi);
+  border: 1px solid var(--border-hi);
+  border-radius: var(--radius-lg);
+  padding: .45rem 0;
+  min-width: 160px;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 200ms cubic-bezier(0.4,0,0.2,1),
+              visibility 200ms cubic-bezier(0.4,0,0.2,1),
+              transform 200ms cubic-bezier(0.4,0,0.2,1);
+  transform: translateX(-50%) translateY(6px);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.55),
+              0 0 0 1px rgba(212,149,40,0.04);
+}
+
+/* accent line at top of dropdown */
+.nav-dropdown-menu::before {
   content: '';
   position: absolute;
-  bottom: -2px; left: 0;
-  width: 100%; height: 1px;
-  background: var(--accent);
-  transform: scaleX(0);
-  transform-origin: right;
-  transition: transform 220ms ease;
+  top: 0; left: 1rem; right: 1rem;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent-dim), transparent);
+  opacity: 0.6;
 }
 
-nav a:hover { color: var(--text); }
-nav a:hover::after { transform: scaleX(1); transform-origin: left; }
-nav a.active { color: var(--accent); }
-nav a.active::after { transform: scaleX(1); background: var(--accent); }
+/* invisible bridge covering the gap between trigger and menu */
+.nav-dropdown-menu::after {
+  content: '';
+  position: absolute;
+  top: -12px; left: 0; right: 0;
+  height: 12px;
+  pointer-events: auto;
+}
+
+.nav-dropdown-menu a {
+  display: block;
+  padding: .45rem 1.1rem;
+  font-size: .82rem;
+  white-space: nowrap;
+  border-radius: 0;
+  margin: 0;
+  color: var(--muted);
+  transition: color 150ms ease, background 150ms ease, padding-left 200ms ease;
+}
+
+.nav-dropdown-menu a:hover {
+  background: rgba(212,149,40,0.08);
+  color: var(--text-hi);
+  padding-left: 1.4rem;
+}
+
+.nav-dropdown-menu a.active {
+  color: var(--accent-glow);
+  background: rgba(212,149,40,0.1);
+}
+
+.nav-dropdown-menu a.active::before {
+  content: '';
+  display: inline-block;
+  width: 5px; height: 5px;
+  background: var(--accent);
+  border-radius: 50%;
+  margin-right: .5em;
+  vertical-align: middle;
+  position: relative;
+  top: -1px;
+}
+
+.nav-dropdown:hover .nav-dropdown-menu,
+.nav-dropdown:focus-within .nav-dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* keep menu open while hovering the invisible bridge */
+.nav-dropdown-menu:hover {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
 
 /* ── Headings ─────────────────────────────────────────────────── */
 h1 {
   font-size: 2rem;
   font-weight: 700;
   color: var(--text-hi);
-  margin: 0 0 .5rem;
+  margin: .3rem 0 .5rem;
   letter-spacing: -0.02em;
   position: relative;
 }
@@ -185,21 +315,35 @@ h1::before {
 
 @keyframes headingBar {
   0%, 100% { background: var(--accent); }
-  50%      { background: var(--accent-glow); box-shadow: 0 0 8px rgba(212,149,40,0.3); }
+  50%      { background: var(--accent-glow); box-shadow: 0 0 10px rgba(212,149,40,0.35); }
 }
 
 h2 {
-  font-size: 1.3rem;
+  font-size: 1.25rem;
   font-weight: 650;
   color: var(--text-hi);
   margin: 2.5rem 0 .75rem;
-  padding-bottom: .4rem;
+  padding-bottom: .45rem;
   border-bottom: 1px solid var(--border);
   letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+}
+
+h2::before {
+  content: '';
+  display: inline-block;
+  width: 6px; height: 6px;
+  background: var(--accent);
+  border-radius: 1px;
+  transform: rotate(45deg);
+  flex-shrink: 0;
+  opacity: 0.7;
 }
 
 h3 {
-  font-size: 1.05rem;
+  font-size: 1.02rem;
   font-weight: 600;
   color: var(--text);
   margin: 1.5rem 0 .5rem;
@@ -235,12 +379,13 @@ pre {
   line-height: 1.55;
   margin: 1rem 0;
   position: relative;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
 }
 
 pre::before {
   content: '';
   position: absolute; top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(212,149,40,0.15), transparent);
+  background: linear-gradient(90deg, transparent, rgba(212,149,40,0.12), transparent);
   pointer-events: none;
 }
 
@@ -255,11 +400,14 @@ table {
   border-collapse: collapse;
   margin: 1.25rem 0;
   font-size: .93rem;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--border);
 }
 
 th, td {
   border: 1px solid var(--border);
-  padding: .6rem .85rem;
+  padding: .65rem .9rem;
   text-align: left;
   vertical-align: top;
 }
@@ -268,9 +416,9 @@ th {
   background: var(--surface);
   font-weight: 600;
   color: var(--text-hi);
-  font-size: .85rem;
+  font-size: .82rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
 }
 
 tr:nth-child(even) { background: rgba(255,255,255,0.012); }
@@ -335,12 +483,14 @@ tbody tr:hover { background: rgba(212,149,40,0.03); }
   margin: 1rem 0;
   overflow: hidden;
   background: var(--surface);
-  transition: border-color var(--transition), box-shadow var(--transition);
+  transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
 }
 
 .phase:hover {
   border-color: var(--border-hi);
-  box-shadow: 0 2px 24px rgba(0,0,0,0.25), 0 0 0 1px rgba(212,149,40,0.04);
+  box-shadow: 0 4px 28px rgba(0,0,0,0.3), 0 0 0 1px rgba(212,149,40,0.05);
+  transform: translateY(-1px);
 }
 
 .phase-header {
@@ -380,16 +530,15 @@ tbody tr:hover { background: rgba(212,149,40,0.03); }
   background: linear-gradient(90deg, transparent, rgba(212,149,40,0.2), transparent);
 }
 
-/* ── Summary box (replaces ASCII quote boxes) ─────────────────── */
+/* ── Summary box ───────────────────────────────────── */
 .summary-box {
   background: var(--surface);
   border: 1px solid var(--border-hi);
   border-radius: var(--radius-lg);
-  padding: 1.5rem 1.75rem;
+  padding: 1.4rem 1.6rem;
   margin: 1.25rem 0;
   position: relative;
-  animation: fadeSlideIn 0.5s ease both;
-  animation-delay: 0.08s;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.15);
 }
 
 .summary-box::before {
@@ -401,20 +550,16 @@ tbody tr:hover { background: rgba(212,149,40,0.03); }
 }
 
 .summary-box p {
-  font-size: 1.02rem;
+  font-size: .98rem;
   line-height: 1.8;
   color: var(--text);
   margin-bottom: 0;
 }
 
-.summary-box p + p {
-  margin-top: .75rem;
-}
+.summary-box p + p { margin-top: .75rem; }
 
-/* ── Tree diagram (replaces ASCII tree art) ───────────────────── */
-.tree-diagram {
-  margin: 1.25rem 0;
-}
+/* ── Tree diagram ─────────────────────────────────── */
+.tree-diagram { margin: 1.25rem 0; }
 
 .tree-root {
   background: var(--surface);
@@ -442,7 +587,7 @@ tbody tr:hover { background: rgba(212,149,40,0.03); }
 .tree-branches {
   margin-left: 1.2rem;
   border-left: 1px solid var(--border);
-  padding: .35rem 0 .35rem 0;
+  padding: .35rem 0;
 }
 
 .tree-branch {
@@ -455,9 +600,7 @@ tbody tr:hover { background: rgba(212,149,40,0.03); }
   transition: border-color var(--transition);
 }
 
-.tree-branch:hover {
-  border-color: var(--border-hi);
-}
+.tree-branch:hover { border-color: var(--border-hi); }
 
 .tree-branch::before {
   content: '';
@@ -468,50 +611,33 @@ tbody tr:hover { background: rgba(212,149,40,0.03); }
 }
 
 .tree-branch-hd {
-  display: flex;
-  align-items: baseline;
-  gap: .5rem;
-  margin-bottom: .4rem;
-  flex-wrap: wrap;
+  display: flex; align-items: baseline; gap: .5rem;
+  margin-bottom: .4rem; flex-wrap: wrap;
 }
 
 .tree-dir {
   font-family: var(--font-mono);
-  font-weight: 650;
-  font-size: .9rem;
+  font-weight: 650; font-size: .9rem;
   color: var(--text-hi);
 }
 
-.tree-tag {
-  font-size: .8rem;
-  color: var(--muted);
-  font-style: italic;
-}
+.tree-tag { font-size: .8rem; color: var(--muted); font-style: italic; }
 
-.tree-leaves {
-  display: flex;
-  flex-wrap: wrap;
-  gap: .3rem .55rem;
-}
+.tree-leaves { display: flex; flex-wrap: wrap; gap: .3rem .55rem; }
 
 .tree-leaf {
   font-family: var(--font-mono);
-  font-size: .78rem;
-  color: var(--muted);
+  font-size: .78rem; color: var(--muted);
   padding: .1em .5em;
-  background: var(--code-bg);
-  border-radius: 3px;
+  background: var(--code-bg); border-radius: 3px;
   border: 1px solid rgba(255,255,255,0.03);
   white-space: nowrap;
 }
 
-/* ── Flow diagram (horizontal data flow) ──────────────────────── */
+/* ── Flow diagram ─────────────────────────────────── */
 .flow-diagram {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: .5rem;
-  flex-wrap: wrap;
+  display: flex; align-items: center; justify-content: center;
+  gap: .5rem; flex-wrap: wrap;
   padding: 1.5rem;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -524,8 +650,7 @@ tbody tr:hover { background: rgba(212,149,40,0.03); }
   border: 1px solid var(--border-hi);
   border-radius: var(--radius);
   padding: .45rem 1rem;
-  font-weight: 600;
-  font-size: .9rem;
+  font-weight: 600; font-size: .9rem;
   color: var(--text-hi);
   transition: border-color var(--transition), box-shadow var(--transition);
 }
@@ -535,12 +660,9 @@ tbody tr:hover { background: rgba(212,149,40,0.03); }
   box-shadow: 0 0 16px rgba(212,149,40,0.08);
 }
 
-.flow-arrow {
-  color: var(--accent);
-  font-size: 1.1rem;
-  font-weight: 700;
-  padding: 0 .2rem;
-}
+.flow-arrow { color: var(--accent); font-size: 1.1rem; font-weight: 700; padding: 0 .2rem; }
+
+.flow-column { display: flex; flex-direction: column; align-items: center; gap: .4rem; }
 
 /* ── Note callout ─────────────────────────────────────────────── */
 .note {
@@ -554,13 +676,16 @@ tbody tr:hover { background: rgba(212,149,40,0.03); }
 
 .note strong { color: var(--accent); }
 
+.note-group { display: flex; flex-direction: column; gap: .5rem; margin: 1.25rem 0; }
+
 /* ── Footer ───────────────────────────────────────────────────── */
 footer {
   margin-top: 3.5rem;
   padding-top: 1.25rem;
   border-top: 1px solid var(--border);
   color: var(--muted);
-  font-size: .82rem;
+  font-size: .8rem;
+  opacity: 0.7;
 }
 
 /* ── Status grid & cards ──────────────────────────────────────── */
@@ -582,7 +707,7 @@ footer {
 .status-card:hover {
   border-color: var(--border-hi);
   transform: translateY(-2px);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.25);
 }
 
 .status-card h3 { margin-top: 0 !important; }
@@ -594,10 +719,32 @@ footer {
   border-radius: var(--radius-lg);
   padding: 1.1rem 1.4rem;
   margin: 1.5rem 0;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.12);
 }
 
 .toc ol { margin-bottom: 0; }
 .toc a { text-decoration: none; }
+.toc a:hover { color: var(--accent-glow); }
+
+/* ── Hero metric row ──────────────────────────────────────────── */
+.metric-row {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin: 1rem 0 2rem;
+}
+
+.metric-item { display: flex; flex-direction: column; }
+
+.metric-value {
+  font-size: 1.6rem; font-weight: 700;
+  color: var(--text-hi); line-height: 1.2;
+}
+
+.metric-label {
+  font-size: .78rem; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
 
 /* ── Staggered load-in ────────────────────────────────────────── */
 @keyframes fadeSlideIn {
@@ -608,7 +755,11 @@ footer {
 h1                        { animation: fadeSlideIn 0.5s ease both; }
 h1 + p                    { animation: fadeSlideIn 0.5s ease both; animation-delay: 0.06s; }
 .status-grid              { animation: fadeSlideIn 0.5s ease both; animation-delay: 0.1s; }
+.metric-row               { animation: fadeSlideIn 0.5s ease both; animation-delay: 0.1s; }
+.summary-box              { animation: fadeSlideIn 0.5s ease both; animation-delay: 0.08s; }
 h2:nth-of-type(1)         { animation: fadeSlideIn 0.5s ease both; animation-delay: 0.14s; }
+h2:nth-of-type(2)         { animation: fadeSlideIn 0.5s ease both; animation-delay: 0.18s; }
+h2:nth-of-type(3)         { animation: fadeSlideIn 0.5s ease both; animation-delay: 0.22s; }
 .phase:nth-of-type(1)     { animation: fadeSlideIn 0.5s ease both; animation-delay: 0.1s; }
 .phase:nth-of-type(2)     { animation: fadeSlideIn 0.5s ease both; animation-delay: 0.16s; }
 .phase:nth-of-type(3)     { animation: fadeSlideIn 0.5s ease both; animation-delay: 0.22s; }
@@ -616,7 +767,10 @@ h2:nth-of-type(1)         { animation: fadeSlideIn 0.5s ease both; animation-del
 .phase:nth-of-type(5)     { animation: fadeSlideIn 0.5s ease both; animation-delay: 0.34s; }
 .phase:nth-of-type(6)     { animation: fadeSlideIn 0.5s ease both; animation-delay: 0.40s; }
 .phase:nth-of-type(7)     { animation: fadeSlideIn 0.5s ease both; animation-delay: 0.46s; }
+.tree-diagram             { animation: fadeSlideIn 0.5s ease both; animation-delay: 0.12s; }
+.flow-diagram             { animation: fadeSlideIn 0.5s ease both; animation-delay: 0.15s; }
 .note                     { animation: fadeSlideIn 0.5s ease both; animation-delay: 0.18s; }
+.note-group               { animation: fadeSlideIn 0.5s ease both; animation-delay: 0.18s; }
 .toc                      { animation: fadeSlideIn 0.5s ease both; animation-delay: 0.12s; }
 footer                    { animation: fadeSlideIn 0.6s ease both; animation-delay: 0.4s; }
 
@@ -624,6 +778,55 @@ footer                    { animation: fadeSlideIn 0.6s ease both; animation-del
 ::selection {
   background: rgba(212,149,40,0.25);
   color: var(--text-hi);
+}
+
+/* ── Deep Interview page (optional) ─────────────────────────────
+   Use when the project has recorded decision-making interviews or
+   requirements-gathering sessions. The layout provides a sticky TOC
+   sidebar + Q&A card sections. See ADDING_PAGES section in skill.md. */
+.di-layout { display:flex; gap:2rem; align-items:flex-start; }
+.di-toc {
+  position:sticky; top:1rem; min-width:230px; max-width:260px;
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius-lg); padding:1.1rem;
+  font-size:.84rem; line-height:1.7;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+}
+.di-toc h3 { margin:0 0 .6rem; font-size:.88rem; color:var(--accent); }
+.di-toc a { color:var(--muted); text-decoration:none; transition:color 150ms ease; display:block; padding:.1rem 0; }
+.di-toc a:hover { color:var(--accent-glow); }
+.di-toc a.toc-h2 { font-weight:600; color:var(--text); margin-top:.65rem; }
+.di-toc a.toc-h3 { padding-left:.85rem; font-size:.8rem; }
+.di-main { flex:1; min-width:0; }
+.di-section {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius-lg); padding:1.5rem 2rem; margin-bottom:1.5rem;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.12);
+  scroll-margin-top:1rem;
+}
+.di-section h2 { margin-top:0; border-bottom:1px solid var(--border); padding-bottom:.5rem; }
+.di-section h3 {
+  font-size:1rem; color:var(--text-hi); margin:1.4rem 0 .5rem;
+  padding-left:.6rem; border-left:2px solid var(--accent-dim);
+}
+.di-q {
+  background:var(--bg); border:1px solid var(--border);
+  border-radius:var(--radius); padding:.7rem 1rem; margin:.6rem 0;
+  border-left:2px solid var(--blue);
+}
+.di-q .q-label { font-size:.68rem; font-weight:700; color:var(--blue); text-transform:uppercase; letter-spacing:.07em; }
+.di-q .q-text { color:var(--text); margin:.2rem 0 0; font-size:.9rem; }
+.di-a {
+  margin:.6rem 0 1rem; padding:.2rem 0 .2rem 1rem;
+  border-left:2px solid var(--accent);
+}
+.di-a .a-label { font-size:.68rem; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:.07em; }
+.di-a .a-text { color:var(--accent-glow); margin:.2rem 0 0; font-size:.92rem; line-height:1.75; }
+.di-meta { font-size:.78rem; color:var(--muted); margin-bottom:1.5rem; }
+.di-meta span { margin-right:1.2rem; }
+@media(max-width:800px) {
+  .di-layout { flex-direction:column; }
+  .di-toc { position:static; max-width:100%; }
 }
 
 /* ── Interactive Architecture Diagram ────────────────────────────
@@ -781,8 +984,40 @@ footer                    { animation: fadeSlideIn 0.6s ease both; animation-del
 }
 
 .arch-phase-desc.visible { display: block; }
-
 .arch-phase-desc strong { color: var(--accent); }
+
+/* ── SVG flow lines ────────────────────────────────────────── */
+@keyframes flowDash {
+  to { stroke-dashoffset: -24; }
+}
+
+@keyframes flowPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.flow-svg { overflow: visible; }
+
+.flow-line {
+  stroke: var(--accent);
+  stroke-width: 2;
+  fill: none;
+  stroke-dasharray: 8 4;
+  animation: flowDash .8s linear infinite;
+  opacity: 0;
+  transition: opacity .4s ease;
+}
+
+.flow-line.animate { opacity: 0.8; }
+
+.flow-dot {
+  fill: var(--accent-glow);
+  animation: flowPulse 1.2s ease-in-out infinite;
+  opacity: 0;
+  transition: opacity .4s ease;
+}
+
+.flow-dot.animate { opacity: 1; }
 
 /* ── Scrollbar ────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
