@@ -34,6 +34,27 @@ These four pages must exist after initialization. They cover the essential dimen
 | Usage | `USAGE.md` | Build / run / test commands, configuration, environment setup |
 | Design Decisions | `DESIGN_DECISIONS.md` | Key ADRs, why-not alternatives, tradeoffs made |
 
+### Interactive Architecture Diagram (optional)
+
+When the project has multiple modules spanning different languages or repos with clear data-flow phases (e.g., profiling → training → inference), the ARCHITECTURE page can include an interactive diagram with:
+
+- **Phase buttons** — users click to switch between phases, each phase gets a distinct color (Phase 1: blue, Phase 2: purple, Phase 3: gold)
+- **Canvas-animated flow lines** — dashed arrows with glowing dots that travel **sequentially step-by-step** (one step at a time, not simultaneous)
+- **Step indicator panel** — DOM element showing current step label, progress bar, and per-phase colored badge, updated in sync with the animation
+
+Use this when:
+- The project has ≥2 independent modules or repos
+- Data flows between them in discrete, nameable phases
+- Each phase involves ≥2 steps of data handoff
+
+Counter-constraint: do NOT use this for simple single-repo projects with trivial data flow. Use a static `flow-diagram` instead.
+
+Template implementation:
+- The `architecture.html` template contains the full Canvas animation engine (no modification needed) and placeholder data structures (`phaseSteps`, `highlightModules`, `phaseColors`) marked with `AGENT:` comments for the agent to fill from repo analysis
+- All CSS classes are prefixed `arch-` and live in `style.css` under the "Interactive Architecture Diagram" comment block
+- The animation engine is a state machine: `travel` (dot moves from source to target) → `pause` (completed connection held visible) → next step → cycle after all steps done
+- In "全部连接" (phase 0) mode, all three phases' steps chain sequentially with their respective colors, showing the full end-to-end pipeline
+
 ### Adding pages beyond the baseline
 
 The four core pages are a **floor, not a ceiling**. After analyzing the repo, add pages when the content warrants independent treatment. Use these heuristics to decide:

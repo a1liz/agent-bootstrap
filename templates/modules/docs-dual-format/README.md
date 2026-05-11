@@ -27,6 +27,8 @@ docs/
     └── ...                # 与 md/ 一一对应
 ```
 
+架构页 (`architecture.html`) 支持**交互式数据流图**：点击 Phase 按钮查看各阶段模块间数据流动的逐步动画，每步配有颜色编码（蓝/紫/金）和进度面板。适用于多仓库/多语言项目的分阶段数据管线展示。实现细节见 `skill.md` 的 "Interactive Architecture Diagram" 节。
+
 ## 页面数量
 
 4 个核心页面（OVERVIEW / ARCHITECTURE / USAGE / DESIGN_DECISIONS）是**最低基线**，任何项目都必须有。Agent 分析仓库后，根据实际复杂度自主决定是否追加页面：

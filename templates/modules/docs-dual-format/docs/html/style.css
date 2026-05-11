@@ -626,6 +626,164 @@ footer                    { animation: fadeSlideIn 0.6s ease both; animation-del
   color: var(--text-hi);
 }
 
+/* ── Interactive Architecture Diagram ────────────────────────────
+   Canvas-animated phase-based data flow with step indicator panel.
+   Usage: pair with architecture.html template. Agent fills module
+   names and phase step definitions from actual repo analysis. */
+
+.arch-container {
+  margin: 1.5rem 0;
+}
+
+.arch-phases {
+  display: flex; gap: .5rem; margin-bottom: .75rem; flex-wrap: wrap;
+}
+
+.arch-phase-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: .55rem 1.2rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: .88rem;
+  font-weight: 600;
+  transition: all var(--transition);
+}
+
+.arch-phase-btn:hover {
+  border-color: var(--border-hi);
+  color: var(--text);
+}
+
+.arch-phase-btn.active {
+  background: var(--surface-hi);
+  border-color: var(--ph-color-solid, var(--accent));
+  color: var(--ph-color-solid, var(--accent));
+  box-shadow: 0 0 16px var(--ph-color, rgba(212,149,40,0.08));
+}
+
+.arch-diagram {
+  display: grid;
+  grid-template-columns: 1fr 120px 1fr;
+  gap: 0;
+  align-items: start;
+  position: relative;
+}
+
+.arch-col {
+  display: flex; flex-direction: column; gap: .6rem;
+}
+
+.arch-col-label {
+  font-size: .78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--muted);
+  margin-bottom: .3rem;
+  padding-bottom: .4rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.arch-module {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: .65rem .9rem;
+  font-size: .84rem;
+  transition: all .35s ease;
+  position: relative;
+}
+
+.arch-module:hover {
+  border-color: var(--border-hi);
+  transform: translateY(-1px);
+}
+
+.arch-module.highlight {
+  border-color: var(--accent);
+  box-shadow: 0 0 20px rgba(212,149,40,0.1), inset 0 0 20px rgba(212,149,40,0.03);
+  transform: translateY(-1px);
+}
+
+.arch-module .mod-name {
+  font-family: var(--font-mono);
+  font-weight: 650;
+  font-size: .82rem;
+  color: var(--text-hi);
+  display: block;
+}
+
+.arch-module .mod-desc {
+  font-size: .75rem;
+  color: var(--muted);
+  margin-top: .15rem;
+}
+
+.arch-module .mod-tag {
+  display: inline-block;
+  font-size: .68rem;
+  padding: .08em .5em;
+  border-radius: 10px;
+  margin-top: .35rem;
+  font-weight: 600;
+}
+
+.mod-tag-cpp {
+  background: var(--blue-dim);
+  color: var(--blue);
+  border: 1px solid rgba(88,152,204,0.2);
+}
+
+.mod-tag-py {
+  background: var(--purple-dim);
+  color: var(--purple);
+  border: 1px solid rgba(152,120,190,0.2);
+}
+
+.arch-data-node {
+  background: var(--code-bg);
+  border: 1px dashed var(--border-hi);
+  border-radius: var(--radius);
+  padding: .35rem .6rem;
+  font-family: var(--font-mono);
+  font-size: .74rem;
+  color: var(--accent);
+  text-align: center;
+  margin: .25rem 0;
+}
+
+.arch-connectors {
+  position: relative;
+  min-height: 200px;
+}
+
+.arch-connectors canvas {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+}
+
+.arch-phase-desc {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.25rem;
+  margin-top: 1.25rem;
+  font-size: .85rem;
+  color: var(--text);
+  line-height: 1.7;
+  display: none;
+  animation: fadeSlideIn .4s ease both;
+}
+
+.arch-phase-desc.visible { display: block; }
+
+.arch-phase-desc strong { color: var(--accent); }
+
 /* ── Scrollbar ────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: var(--bg-deeper); }
