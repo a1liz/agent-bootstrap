@@ -1,6 +1,7 @@
 ---
 name: bootstrap-core
 description: Core project conventions — docs structure, schemas, artifacts layout, repo hygiene, and operational run patterns. Use when working on a bootstrapped project or when aligning an existing project to bootstrap conventions.
+user-invocable: true
 version: {{BOOTSTRAP_VERSION}}
 ---
 

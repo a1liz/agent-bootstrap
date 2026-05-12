@@ -11,6 +11,10 @@ usage() {
   echo "Non-interactive:" >&2
   echo "  $0 <project-dir> --with-<skill> [...]" >&2
   echo "  skills: bootstrap-core, eval-harness, multi-run, tmux, browser-adapter, docs-dual-format" >&2
+  echo ""
+  echo "Infrastructure sync:" >&2
+  echo "  $0 <project-dir> --sync-native" >&2
+  echo "  Syncs .claude/skills/<name>/SKILL.md for all installed skills without touching skill content." >&2
 }
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -23,6 +27,7 @@ target_dir=""
 modules=()
 dry_run=false
 interactive=true
+sync_native_only=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -38,6 +43,8 @@ while [[ $# -gt 0 ]]; do
       modules+=("multi-run"); interactive=false; shift ;;
     --with-docs-dual-format)
       modules+=("docs-dual-format"); interactive=false; shift ;;
+	    --sync-native)
+	      sync_native_only=true; interactive=false; shift ;;
     --dry-run)
       dry_run=true; shift ;;
     --help|-h)
@@ -66,6 +73,28 @@ if [[ -z "$target_dir" ]] || [[ ! -d "$target_dir" ]]; then
 fi
 
 target_dir="$(cd "$target_dir" && pwd)"
+skills_dir="$target_dir/.claude/skills"
+
+# ── sync-native: only sync SKILL.md, then exit ─────────────────────
+
+if $sync_native_only; then
+  if [[ -d "$skills_dir" ]]; then
+    count=0
+    for f in "$skills_dir"/*.md; do
+      if [[ -f "$f" ]]; then
+        _name=$(basename "$f" .md)
+        create_native_command "$target_dir" "$_name"
+        echo "  synced: .claude/skills/${_name}/SKILL.md"
+        count=$((count + 1))
+      fi
+    done
+    echo ""
+    echo "done — synced native commands for $count skill(s)"
+  else
+    echo "no .claude/skills/ directory, nothing to sync"
+  fi
+  exit 0
+fi
 
 # ── detect current state ────────────────────────────────────────
 
@@ -171,6 +200,39 @@ if [[ $outdated_count -gt 0 ]]; then
   echo "⚠  $outdated_count skill(s) are outdated and should be updated."
 fi
 
+# Detect skills missing SKILL.md (native Claude Code support)
+missing_native=()
+if [[ -d "$skills_dir" ]]; then
+  for f in "$skills_dir"/*.md; do
+    if [[ -f "$f" ]]; then
+      _name=$(basename "$f" .md)
+      if [[ ! -f "$skills_dir/${_name}/SKILL.md" ]]; then
+        missing_native+=("$_name")
+      fi
+    fi
+  done
+fi
+
+if [[ ${#missing_native[@]} -gt 0 ]]; then
+  echo ""
+  echo "🔧 ${#missing_native[@]} skill(s) are missing native command support (SKILL.md):"
+  for s in "${missing_native[@]}"; do
+    echo "     - $s"
+  done
+  if $interactive; then
+    echo ""
+    read -r -p "Sync native command support now? [Y/n] " sync_answer
+    if [[ -z "$sync_answer" ]] || [[ "$sync_answer" == "y" ]] || [[ "$sync_answer" == "Y" ]] || [[ "$sync_answer" == "yes" ]]; then
+      for s in "${missing_native[@]}"; do
+        create_native_command "$target_dir" "$s"
+        echo "  synced: .claude/skills/${s}/SKILL.md"
+      done
+      echo ""
+      echo "done — synced native commands for ${#missing_native[@]} skill(s)"
+    fi
+  fi
+fi
+
 echo ""
 echo "Available skills:"
 print_module_menu_with_status all_modules skill_status
@@ -180,6 +242,26 @@ print_module_menu_with_status all_modules skill_status
 if $interactive; then
   prompt_module_selection "update"
   modules=("${SELECTED_MODULES[@]}")
+fi
+
+# Handle sync-native sentinel from interactive menu
+if [[ ${#modules[@]} -eq 1 ]] && [[ "${modules[0]}" == "__sync_native__" ]]; then
+  if [[ -d "$skills_dir" ]]; then
+    count=0
+    for f in "$skills_dir"/*.md; do
+      if [[ -f "$f" ]]; then
+        _name=$(basename "$f" .md)
+        create_native_command "$target_dir" "$_name"
+        echo "  synced: .claude/skills/${_name}/SKILL.md"
+        count=$((count + 1))
+      fi
+    done
+    echo ""
+    echo "done — synced native commands for $count skill(s)"
+  else
+    echo "no .claude/skills/ directory, nothing to sync"
+  fi
+  exit 0
 fi
 
 if [[ ${#modules[@]} -eq 0 ]]; then
@@ -241,6 +323,7 @@ for module in "${modules[@]}"; do
   cp "$module_path/skill.md" "$skills_dir/${module}.md"
   sed -i "s/{{BOOTSTRAP_VERSION}}/${module_version}/" "$skills_dir/${module}.md"
   echo "  skill: .claude/skills/${module}.md  (v ${module_version})"
+  create_native_command "$target_dir" "$module"
 
   # Copy supporting assets
   dest="$skills_dir/$module"
@@ -254,6 +337,17 @@ for module in "${modules[@]}"; do
   fi
 done
 
+# ── sync native commands for all installed skills ─────────────────
+
+if [[ -d "$skills_dir" ]]; then
+  for f in "$skills_dir"/*.md; do
+    if [[ -f "$f" ]]; then
+      _name=$(basename "$f" .md)
+      create_native_command "$target_dir" "$_name"
+    fi
+  done
+fi
+
 # ── record source ───────────────────────────────────────────────
 
 cat > "$skills_dir/.bootstrap-source.txt" <<EOF
@@ -264,4 +358,4 @@ modules: ${modules[*]}
 EOF
 
 echo ""
-echo "done — skills in .claude/skills/"
+echo "done — skills updated in .claude/skills/"

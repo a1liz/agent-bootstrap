@@ -1,6 +1,7 @@
 ---
 name: docs-dual-format
 description: Maintain project documentation in parallel markdown and HTML formats with shared style and navigation. Use when creating new docs, updating existing docs, or when the user asks about documentation standards.
+user-invocable: true
 version: {{BOOTSTRAP_VERSION}}
 ---
 

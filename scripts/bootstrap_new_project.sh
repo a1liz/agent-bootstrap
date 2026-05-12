@@ -147,6 +147,7 @@ for module in "${modules[@]}"; do
   module_version="${module_version:-unknown}"
   cp "$module_path/skill.md" "$skills_dir/${module}.md"
   sed -i "s/{{BOOTSTRAP_VERSION}}/${module_version}/" "$skills_dir/${module}.md"
+  create_native_command "$target_dir" "$module"
 
   # Supporting assets (same logic as update script)
   dest="$skills_dir/$module"

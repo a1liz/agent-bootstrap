@@ -49,6 +49,22 @@ print_module_menu_with_status() {
   done
 }
 
+# Copy the skill file to <name>/SKILL.md so Claude Code native discovers it
+# alongside the flat .md file that OMC uses.
+# $1 = target project root dir
+# $2 = module name (e.g. "tmux")
+create_native_command() {
+  local target_dir="$1"
+  local module_name="$2"
+  local skills_dir="$target_dir/.claude/skills"
+  local skill_file="$skills_dir/${module_name}.md"
+  local skill_dir="$skills_dir/$module_name"
+
+  # Claude Code native loads skills from .claude/skills/<name>/SKILL.md
+  mkdir -p "$skill_dir"
+  cp "$skill_file" "$skill_dir/SKILL.md"
+}
+
 # Prompt user to pick modules from the menu (uses MENU_MODULES from print_*).
 # $1 = "select" (new install) or "update" (add/update existing)
 # Returns selected module names in global array SELECTED_MODULES.
@@ -56,9 +72,9 @@ prompt_module_selection() {
   local mode="$1"
   local prompt
   if [[ "$mode" == "select" ]]; then
-    prompt="Enter numbers to include (comma-separated), 'all', or press Enter for none"
+    prompt="Enter numbers to include (comma-separated), 'all', 'sync', or press Enter for none"
   else
-    prompt="Enter numbers to install/update (comma-separated), 'all', or press Enter to skip"
+    prompt="Enter numbers to install/update (comma-separated), 'all', 'sync', or press Enter to skip"
   fi
 
   SELECTED_MODULES=()
@@ -66,6 +82,11 @@ prompt_module_selection() {
   read -r -p "$prompt: " answer
 
   if [[ -z "$answer" ]]; then
+    return
+  fi
+
+  if [[ "$answer" == "sync" ]]; then
+    SELECTED_MODULES=("__sync_native__")
     return
   fi
 

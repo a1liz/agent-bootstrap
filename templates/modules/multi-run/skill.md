@@ -1,6 +1,7 @@
 ---
 name: multi-run
 description: Run experiments with multiple configurations and compare results. Use when the user wants to run parameter sweeps, A/B comparisons, or batch experiments.
+user-invocable: true
 version: {{BOOTSTRAP_VERSION}}
 ---
 

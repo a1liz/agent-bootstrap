@@ -1,6 +1,7 @@
 ---
 name: browser-adapter
 description: Browser automation integration for web testing, scraping, and screenshot capture. Use when the user asks about browser-based tools or web automation.
+user-invocable: true
 version: {{BOOTSTRAP_VERSION}}
 ---
 

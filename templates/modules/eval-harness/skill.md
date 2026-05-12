@@ -1,6 +1,7 @@
 ---
 name: eval-harness
 description: Framework for running structured evaluations. Use when the user wants to create, run, or compare evaluations.
+user-invocable: true
 version: {{BOOTSTRAP_VERSION}}
 ---
 

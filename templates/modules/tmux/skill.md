@@ -1,6 +1,7 @@
 ---
 name: tmux
 description: Run commands in isolated tmux sessions. Use when the user wants to start a server, run long-lived processes, or execute commands that need detachable terminal sessions.
+user-invocable: true
 version: {{BOOTSTRAP_VERSION}}
 ---
 
